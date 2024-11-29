@@ -1,8 +1,11 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import { compare } from "bcrypt";
+import { Adapter } from "next-auth/adapters";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 import { db } from "~/server/db";
+import { User } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -31,26 +34,70 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  providers: [
-    DiscordProvider,
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
-  ],
-  adapter: PrismaAdapter(db),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
+    session: ({ session, token }) => {
+      return ({
+        ...session,
+        user: token.user as User | undefined
+      })
+    },
+    async jwt({ token }) {
+      if (token.sub) {
+        let data = await db.user.findFirst({
+          where: {
+            id: token.sub,
+          }
+        })
+
+        if (data) {
+          // @ts-ignore
+          delete data.password
+
+          token = { ...token, user: data }
+        }
+      }
+
+      return token;
+    },
+  },
+  adapter: PrismaAdapter(db) as Adapter,
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "text", placeholder: "you@example.com" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        
+        const { email, password } = credentials;
+
+        // Найдите пользователя в базе данных
+        const user = await db.user.findUnique({
+          where: { email },
+        });
+
+        // Если пользователь найден и пароли совпадают
+        if (user && (await compare(password, user.password))) {
+          return {
+            name: user.name,
+            email: user.email,
+            id: user.id,
+          }; // Вернуть данные пользователя, если авторизация успешна
+        }
+
+        // Если авторизация не удалась, вернуть null
+        return null;
       },
     }),
+  ],
+  session: {
+    strategy: 'jwt',
+    // jwt: true,
   },
 } satisfies NextAuthConfig;
+
+
