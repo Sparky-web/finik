@@ -1,5 +1,5 @@
 'use client'
-import { CalendarDays, Home, User, Upload, Users, File, AlertCircleIcon } from "lucide-react";
+import { CalendarDays, Home, User, Upload, Users, File, AlertCircleIcon, Bug, ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FC, ReactElement, ReactNode } from "react";
@@ -7,14 +7,25 @@ import { cn } from "~/lib/utils";
 import MobileMenu from "./mobile";
 import DesktopMenu from "./desktop";
 import { useAppSelector } from "../../client-store";
+import { P } from "~/components/ui/typography";
 
 
 const menu: MenuItem[] = [
     {
-        title: 'Тестовая страница',
-        path: '/app/test',
+        title: 'Главная',
+        path: '/app/summary',
         icon: Home
     },
+    {
+        title: 'Тестовая страница',
+        path: '/app/test',
+        icon: Bug
+    },
+    {
+        title: 'Транзакции',
+        path: '/app/transactions',
+        icon: ArrowLeftRight
+    }
     
     // {
     //     title: 'Загрузить расписание',

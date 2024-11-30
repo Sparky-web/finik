@@ -1,5 +1,7 @@
 import { Settings, DateTime } from 'luxon';
 
+
+
 // Установка временной зоны Екатеринбурга по умолчанию
 Settings.defaultZone = 'Asia/Yekaterinburg';
 
@@ -11,5 +13,7 @@ Settings.defaultZone = 'Asia/Yekaterinburg';
 //     minute: 0,
 //     second: 0,
 // })
+
+Settings.defaultLocale = "ru";
 
 export default DateTime
