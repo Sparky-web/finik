@@ -62,7 +62,7 @@ export default function LoginCard() {
                 toast.success('Регистрация прошла успешно')
                 form.reset()
 
-                navigation.push('/')
+                navigation.push('/app')
             } catch (e) {
                 toast.error('Ошибка регистрации: ' + e.message)
             }

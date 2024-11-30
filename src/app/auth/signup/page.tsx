@@ -1,6 +1,5 @@
 
 import RegisterCard from "~/app/_lib/components/auth/register-card";
-import SetSchedule from "~/app/lk/all-schedules/_lib/utils/set-schedule";
 import { api } from "~/trpc/server";
 
 // pages/auth/Register.tsx

@@ -13,6 +13,8 @@ export default async function Home() {
 
     const session = await auth();
 
+    return redirect('/app')
+
     //   return redirect('/lk')
 
     void api.post.getLatest.prefetch();
