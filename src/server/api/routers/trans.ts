@@ -6,21 +6,16 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
-export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  create: publicProcedure
-    .input(z.object({ name: z.string(), }))
+export const transRouter = createTRPCRouter({
+    create: publicProcedure
+    .input(z.object({ type1: z.string(), categoryId: z.number(), amount: z.number(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.category.create({
+      return ctx.db.transaction.create({
         data: {
-          name: input.name
+          type: input.type,
+          categoryId: input.categoryId,
+          amount: input.amount,
+          userId: input.userId
         },
       });
     }),
