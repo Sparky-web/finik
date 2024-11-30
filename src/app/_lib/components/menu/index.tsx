@@ -11,20 +11,11 @@ import { useAppSelector } from "../../client-store";
 
 const menu: MenuItem[] = [
     {
-        title: 'Главная',
-        path: '/lk/my-schedule',
+        title: 'Тестовая страница',
+        path: '/app/test',
         icon: Home
     },
-    {
-        title: 'Все расписания',
-        path: '/lk/all-schedules',
-        icon: CalendarDays
-    },
-    {
-        title: 'Профиль',
-        path: '/lk/profile',
-        icon: User
-    },
+    
     // {
     //     title: 'Загрузить расписание',
     //     path: '/lk/add-schedule',

@@ -36,7 +36,7 @@ export default function LoginCard() {
         },
         onSubmit: async (data) => {
             try {
-                if (!data.value.password || !data.value.confirmPassword) throw new Error('пароли не совпадают')
+                if (data.value.password !== data.value.confirmPassword) throw new Error('пароли не совпадают')
 
                 const { name, email, password } = data.value
 
