@@ -8,7 +8,7 @@ import {
 
 export const transRouter = createTRPCRouter({
     create: publicProcedure
-    .input(z.object({ type1: z.string(), categoryId: z.number(), amount: z.number(), userId: z.string() }))
+    .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transaction.create({
         data: {
@@ -20,14 +20,15 @@ export const transRouter = createTRPCRouter({
       });
     }),
 
-  getLatest: protectedProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.post.findFirst({
-      orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
-    });
-
-    return post ?? null;
-  }),
+    getLatest: protectedProcedure.query(async ({ ctx }) => {
+      console.log(ctx.session.user.id);
+      const post = await ctx.db.transaction.findFirst({
+        orderBy: { date: "desc" },
+        where: { User: { id: ctx.session.user.id } },
+      });
+  
+      return post ?? null;
+    }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";

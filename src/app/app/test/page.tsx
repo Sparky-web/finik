@@ -16,10 +16,8 @@ export default function Page() {
         }
     })
 
-    const { data: res1, error: error1 } = api.user.getAll.useQuery(undefined, {
-    })
-
-    const { data: res2, error: error2 } = api.user.getbyId.useQuery("cm43ywll10006d3egdxdzwqhm")
+    const { data: res1, error: error1 } = api.user.getSumm.useQuery()
+    //const { data: res2, error: error2 } = api.user.getbyId.useQuery("cm43ywll10006d3egdxdzwqhm")
 
     useEffect(() => {
         if(error1) {
@@ -28,12 +26,12 @@ export default function Page() {
         }
     }, [error1])
 
-    useEffect(() => {
+   /* useEffect(() => {
         if(error2) {
             console.error(error2)
             toast.error('Ошибка запроса с параметром: ' + error2.message)
         }
-    }, [error2])
+    }, [error2])*/
 
     return (
         <div className="py-6 grid gap-6">
@@ -58,10 +56,7 @@ export default function Page() {
                 {res1 && <pre>{JSON.stringify(res1, null, 2)}</pre>}
             </div>
 
-            <div className="grid gap-1">
-                <H4>get with params</H4>
-                {res2 && <pre>{JSON.stringify(res2, null, 2)}</pre>}
-            </div>
+           
         </div>
     )
 }

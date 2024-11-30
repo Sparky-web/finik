@@ -82,15 +82,16 @@ model Category {
   icon       String?
   color      String        @default("#808080")
   trnsaction Transaction[]
+  Challenge  Challenge[]
 }
 
 model Transaction {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   date       DateTime @default(now())
   type       Type?
   categoryId Int
-  category   Category  @relation(fields: [categoryId], references: [id])
-  User       User?     @relation(fields: [userId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+  User       User?    @relation(fields: [userId], references: [id])
   amount     Int
   userId     String?
 }
@@ -98,4 +99,32 @@ model Transaction {
 enum Type {
   IN
   OUT
+}
+
+model Challenge {
+  id           Int             @id @default(autoincrement())
+  name         String
+  categoryId   Int
+  category     Category        @relation(fields: [categoryId], references: [id])
+  durationDays Int
+  users        UserChallenge[]
+}
+
+model UserChallenge {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  challengeId Int
+  challenge   Challenge       @relation(fields: [challengeId], references: [id])
+  status      ChallengeStatus
+  startDate   DateTime?
+  endDate     DateTime?
+
+  @@unique([userId, challengeId]) // Уникальная связь вызова с пользователем
+}
+
+enum ChallengeStatus {
+  NEW
+  IN_PROGRESS
+  FAILED
+  COMPLETED
 }

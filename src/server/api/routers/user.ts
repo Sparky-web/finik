@@ -42,8 +42,48 @@ export const userRouter = createTRPCRouter({
       where: { createdBy: { id: ctx.session.user.id } },
     });
 
+
+
+
     return post ?? null;
   }),
+
+  getIn: protectedProcedure.query(async ({ ctx }) => {
+    const trans = await ctx.db.transaction.findMany({
+      orderBy: { date: "desc" },
+      where: { User: { id: ctx.session.user.id}, type: "IN" },
+    })
+
+    return trans ?? null;
+    }),
+
+    getOut: protectedProcedure.query(async ({ ctx }) => {
+        const trans = await ctx.db.transaction.findMany({
+          orderBy: { date: "desc" },
+          where: { User: { id: ctx.session.user.id}, type: "OUT" },
+    })
+    
+    return trans ?? null;
+    }),
+
+    getSumm: protectedProcedure.query(async ({ ctx }) => {
+        const trans = await ctx.db.transaction.findMany({
+            where: {
+                User: {
+                    id: ctx.session.user.id
+                },
+            },
+            select: {
+                _sum: {
+                    select: {amount: true},
+                },
+                orderBy: undefined,
+                by: ["type", "categoryId"]
+        }   
+        })
+    
+    return trans ?? null;
+    }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
