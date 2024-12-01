@@ -20,6 +20,18 @@ export const transRouter = createTRPCRouter({
       });
     }),
 
+
+    delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.transaction.delete({
+       where: {
+        id: input.id
+       }
+      });
+    }),
+
+
     getLatest: protectedProcedure.query(async ({ ctx }) => {
       console.log(ctx.session.user.id);
       const post = await ctx.db.transaction.findFirst({

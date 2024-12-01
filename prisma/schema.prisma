@@ -112,7 +112,7 @@ model Challenge {
 
 model UserChallenge {
   id          Int             @id @default(autoincrement())
-  userId      Int
+  userId      String
   challengeId Int
   challenge   Challenge       @relation(fields: [challengeId], references: [id])
   status      ChallengeStatus
