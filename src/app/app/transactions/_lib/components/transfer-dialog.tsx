@@ -166,7 +166,6 @@ export function TransferDialog({ onTransfer, open: customOpen, onOpenChange: cus
     </form>
   )
 
-  console.log(open)
 
   if (isDesktop) {
     return (

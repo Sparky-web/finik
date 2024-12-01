@@ -8,7 +8,7 @@ import {
 } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
-    create: publicProcedure
+  create: publicProcedure
     .input(z.object({ name: z.string(), email: z.string(), emailVerifed: z.string().datetime(), image: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.create({
@@ -18,12 +18,12 @@ export const userRouter = createTRPCRouter({
           emailVerified: input.emailVerifed,
           image: input.image,
           password: "lmao"
-            
+
         },
       });
     }),
 
-    delete: publicProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.delete({
@@ -33,18 +33,18 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
-    getAll: publicProcedure.query(async ({ ctx }) => {
-        const user = await ctx.db.user.findMany();
-    
-        return user ?? null;
-      }),
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findMany();
 
-    getbyId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-        const user = await ctx.db.user.findUnique({
-          where: { id: input },
-        });
-        return user ?? null;
-      }),
+    return user ?? null;
+  }),
+
+  getbyId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: input },
+    });
+    return user ?? null;
+  }),
 
   getLatest: protectedProcedure.query(async ({ ctx }) => {
     const post = await ctx.db.post.findFirst({
@@ -61,38 +61,38 @@ export const userRouter = createTRPCRouter({
   getIn: protectedProcedure.query(async ({ ctx }) => {
     const trans = await ctx.db.transaction.findMany({
       orderBy: { date: "desc" },
-      where: { User: { id: ctx.session.user.id}, type: "IN" },
+      where: { User: { id: ctx.session.user.id }, type: "IN" },
     })
 
     return trans ?? null;
-    }),
+  }),
 
-    getOut: protectedProcedure.query(async ({ ctx }) => {
-        const trans = await ctx.db.transaction.findMany({
-          orderBy: { date: "desc" },
-          where: { User: { id: ctx.session.user.id}, type: "OUT" },
+  getOut: protectedProcedure.query(async ({ ctx }) => {
+    const trans = await ctx.db.transaction.findMany({
+      orderBy: { date: "desc" },
+      where: { User: { id: ctx.session.user.id }, type: "OUT" },
     })
-    
-    return trans ?? null;
-    }),
 
-    getSumm: protectedProcedure.query(async ({ ctx }) => {
-        const trans = await ctx.db.transaction.groupBy({
-            where: {
-                User: {
-                    id: ctx.session.user.id
-                },
-            },
-           _sum: {
-                   amount: true
-                },
-                orderBy: undefined,
-                by: ["type", "categoryId"]
-          
-        })
-    
     return trans ?? null;
-    }),
+  }),
+
+  getSumm: protectedProcedure.query(async ({ ctx }) => {
+    const trans = await ctx.db.transaction.groupBy({
+      where: {
+        User: {
+          id: ctx.session.user.id
+        },
+      },
+      _sum: {
+        amount: true
+      },
+      orderBy: undefined,
+      by: ["type", "categoryId"]
+
+    })
+
+    return trans ?? null;
+  }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
