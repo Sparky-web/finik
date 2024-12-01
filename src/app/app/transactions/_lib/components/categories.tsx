@@ -22,6 +22,9 @@ interface ExpenseCategoriesProps {
     type: "IN" | "OUT"
     categories: Category[]
 }
+export const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('ru-RU').format(amount)
+}
 
 export default function ExpenseCategories({
     total,
@@ -45,9 +48,7 @@ export default function ExpenseCategories({
         return mainCategories
     }, [sortedCategories, expanded])
 
-    const formatAmount = (amount: number) => {
-        return new Intl.NumberFormat('ru-RU').format(amount)
-    }
+
 
     const chartConfig = React.useMemo(() => {
         return Object.fromEntries(

@@ -11,6 +11,7 @@ import { AddTransactionDialog } from "~/app/app/transactions/_lib/components/add
 export default function ClientActions() {
     const [addIncomeOpen, setAddIncomeOpen] = React.useState(false)
     const [addExpenseOpen, setAddExpenseOpen] = React.useState(false)
+    
 
     const actions = [
         {
