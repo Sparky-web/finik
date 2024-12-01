@@ -48,7 +48,7 @@ const schema = z.object({
 
 export function TransferDialog({ onTransfer, open: customOpen, onOpenChange: customOnOpenChange, triggerButton: CustomTriggerButton }: TransferDialogProps) {
   const [open, setOpen] = React.useState(customOpen || false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+  const isDesktop = true
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),

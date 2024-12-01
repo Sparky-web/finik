@@ -19,7 +19,8 @@ const config = withPWA( {
     },
     typescript: {
         ignoreBuildErrors: true,
-    }
+    },
+    
 });
 
 export default config;

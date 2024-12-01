@@ -54,7 +54,7 @@ const schema = z.object({
 
 export function EditTransactionDialog({ transaction, triggerButton: CustomTriggerButton }: EditTransactionDialogProps) {
   const [open, setOpen] = React.useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+  const isDesktop = true
 
   const { mutateAsync: updateTransaction } = api.transaction.update.useMutation()
 

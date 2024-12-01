@@ -171,7 +171,7 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <PopoverAnchor asChild>
-                            <Button variant="secondary" className="min-w-[300px] text-xs ">
+                            <Button variant="secondary" className=" max-w-[300px] w-full text-xs "> 
                                 <CalendarIcon className="h-4 w-4" />
                                 {getCurrentPeriodLabel()}
                             </Button>

@@ -66,7 +66,7 @@ export const convertDate = (isoString: string) => {
 
 export function AddTransactionDialog({ triggerButton: CustomTriggerButton, customOpen, onOpenChange, type }: AddTransactionDialogProps) {
     const [open, setOpen] = React.useState(false)
-    const isDesktop = useMediaQuery("(min-width: 768px)")
+    const isDesktop = true
 
     const { mutateAsync: addTransaction, isPending } = api.transaction.create.useMutation()
 

@@ -88,7 +88,7 @@ export default function TransactionList({ days, selectedCategories }: { days: Da
                 return (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
+                    className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm"
                   >
                     <div className="flex items-center gap-4">
                       {Icon && <Icon className="w-5 h-5" />}

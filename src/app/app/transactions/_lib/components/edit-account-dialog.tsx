@@ -45,7 +45,7 @@ const schema = z.object({
 export function AccountModificationDialog({ type, currentBalance, onSave, triggerButton: CustomTriggerButton, open: customOpen, onOpenChange: customOnOpenChange }: AccountModificationProps) {
     const [open, setOpen] = React.useState(customOpen || false)
 
-    const isDesktop = useMediaQuery("(min-width: 768px)")
+    const isDesktop = true
 
     const { mutateAsync, isPending } = api.user.setMoney.useMutation()
     const utils = api.useUtils()

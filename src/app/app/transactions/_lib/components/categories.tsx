@@ -86,7 +86,7 @@ export default function ExpenseCategories({
                                 }}
                                 key={category.name}
                                 className={
-                                    cn("flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors",
+                                    cn("flex items-center gap-2 bg-muted rounded-full px-3 py-1 cursor-pointer hover:bg-accent transition-colors",
                                         selectedCategories.includes(category.name) && 'bg-primary text-white hover:bg-primary/90'
                                     )
                                 }
@@ -125,7 +125,7 @@ export default function ExpenseCategories({
                                     if (payload && payload.length > 0) {
                                         const data = payload[0].payload;
                                         return (
-                                            <div className="bg-white px-2 py-1 rounded-xl shadow flex gap-2 items-center">
+                                            <div className="bg-card px-2 py-1 rounded-xl shadow flex gap-2 items-center">
                                                 <div
                                                     className="w-2 h-2 rounded-full flex-shrink-0"
                                                     style={{ backgroundColor: data.color }}
@@ -155,8 +155,8 @@ export default function ExpenseCategories({
                                     content={({ viewBox }) => {
                                         const { cx, cy } = viewBox
                                         return (
-                                            <text x={cx} y={cy} fill="#333" textAnchor="middle" dominantBaseline="central">
-                                                <tspan x={cx} y={cy - 12} className="text-sm text-muted-foreground">
+                                            <text x={cx} y={cy} fill="#666" textAnchor="middle" dominantBaseline="central" className="dark:fill-white">
+                                                <tspan x={cx} y={cy - 12} className="text-sm text-muted-foreground dark:text-white">
                                                     {type === 'IN' ? 'Доходы' : 'Расходы'}
                                                 </tspan>
                                                 <tspan x={cx} y={cy + 12} className="text-lg font-bold">

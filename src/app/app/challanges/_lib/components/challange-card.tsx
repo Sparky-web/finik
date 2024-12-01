@@ -76,11 +76,11 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
   const getStatusColor = () => {
     switch (data.status) {
       case "IN_PROGRESS":
-        return "bg-[#FFB800]"
+        return "bg-[#FFB800] dark:bg-[#FFB800]"
       case "COMPLETED":
-        return "bg-[#00A83C]"
+        return "bg-[#00A83C] dark:bg-[#00A83C]"
       case "FAILED":
-        return "bg-[#FF3B30]"
+        return "bg-[#FF3B30] dark:bg-[#FF3B30]"
       default:
         return "bg-gray-200"
     }
@@ -90,20 +90,20 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
     switch (data.status) {
       case "IN_PROGRESS":
         return (
-          <Badge variant="secondary" className="bg-[#FFF7E6] text-[#FFB800] hover:bg-[#FFF7E6] whitespace-nowrap">
+          <Badge variant="secondary" className="bg-[#FFF7E6] text-[#FFB800] hover:bg-[#FFF7E6] whitespace-nowrap dark:!bg-transparent dark:text-[#FFB800] ">
             в процессе
           </Badge>
         )
       case "COMPLETED":
         return (
-          <Badge variant="secondary" className="bg-[#E8F5EC] text-[#00A83C] hover:bg-[#E8F5EC] whitespace-nowrap">
+          <Badge variant="secondary" className="bg-[#E8F5EC] text-[#00A83C] hover:bg-[#E8F5EC] whitespace-nowrap dark:!bg-transparent dark:text-[#E8F5EC]">
             выполнено
           </Badge>
         )
       case "FAILED":
         return (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-[#FFE5E5] text-[#FF3B30] hover:bg-[#FFE5E5]  whitespace-nowrap">
+            <Badge variant="secondary" className="bg-[#FFE5E5]  text-[#FF3B30] hover:bg-[#FFE5E5]  whitespace-nowrap dark:!bg-transparent dark:text-[#FFE5E5] ">
               провалено
             </Badge>
             <Button
@@ -131,8 +131,8 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-white">
-      <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
+    <div className="flex items-center gap-3 rounded-xl ">
+      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
         {getChallengeIcon(data.challenge.categoryId)}
       </div>
       <div className="grid flex-1 gap-2">
@@ -147,7 +147,7 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
         {data.status !== "NEW" && data.status !== "COMPLETED" && data.status !== "FAILED" && (
           <div className="flex flex-col gap-2">
 
-            <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className={`absolute left-0 top-0 h-full transition-all ${getStatusColor()}`}
                 style={{ width: `${progress}%` }}
