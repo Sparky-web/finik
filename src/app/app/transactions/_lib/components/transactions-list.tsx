@@ -2,7 +2,7 @@
 
 import { DateTime } from "luxon"
 import * as React from "react"
-import { ArrowRightCircle, Pencil, ShoppingBasket, Trash2, TypeIcon as type, LucideIcon, Circle } from 'lucide-react'
+import { ArrowRightCircle, Pencil, ShoppingBasket, Trash2, TypeIcon as type, LucideIcon, Circle, Loader } from 'lucide-react'
 import { Button } from "~/components/ui/button"
 import {
   Dialog,
@@ -18,14 +18,16 @@ import { cn } from "~/lib/utils"
 import { Check } from 'lucide-react'
 import { useForm } from "@tanstack/react-form"
 import { P } from "~/components/ui/typography"
+import { api } from "~/trpc/react"
+import { toast } from "sonner"
 
 interface Transaction {
-  id: number
+  id: string
   date: string
   amount: number
   category: string
   icon: string
-  type: 'in' | 'out'
+  type: 'IN' | 'OUT'
 }
 
 interface DayTransactions {
@@ -35,22 +37,18 @@ interface DayTransactions {
 
 interface Category {
   id: number
-  type: 'in' | 'out'
+  type: 'IN' | 'OUT'
   name: string
   icon: string
   color: string
 }
 
-// This would normally be an API call
-const mockCategories: Category[] = [
-  { id: 1, type: 'out', name: 'Супермаркеты', icon: 'ShoppingBasket', color: '#FF4444' },
-  { id: 2, type: 'out', name: 'Переводы', icon: 'ArrowRightCircle', color: '#33AA33' },
-  { id: 3, type: 'in', name: 'Зарплата', icon: 'Wallet', color: '#4444FF' },
-]
 
-export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:00Z", "items": [{ "id": 1, "date": "2024-11-30T10:15:00Z", "amount": -171.48, "category": "Супермаркеты", "icon": "ShoppingBasket", "type": "out" }, { "id": 2, "date": "2024-11-30T15:30:00Z", "amount": -2000, "category": "Переводы", "icon": "ArrowRightCircle", "type": "out" }] }] }: { days: DayTransactions[] }) {
+export default function TransactionList({ days }: { days: DayTransactions[] }) {
   const [editingTransaction, setEditingTransaction] = React.useState<Transaction | null>(null)
   const [deletingTransaction, setDeletingTransaction] = React.useState<Transaction | null>(null)
+
+  const utils = api.useUtils()
 
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction)
@@ -73,6 +71,8 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
     ArrowRightCircle,
   }
 
+  const { mutateAsync: deleteTransaction, isPending } = api.transaction.delete.useMutation()
+
   return (
     <div className="space-y-6">
 
@@ -91,7 +91,7 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
                     {Icon && <Icon className="w-5 h-5" />}
                     <div>
                       <div className="font-medium flex items-center gap-2 content-center">{transaction.category}
-                        <div className="w-4 h-4 rounded-md mt-0.25" style={{ backgroundColor: mockCategories.find(c => c.name === transaction.category)?.color || '#808080' }} />
+                        <div className="w-4 h-4 rounded-md mt-0.25" style={{ backgroundColor: transaction.color }} />
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatTime(transaction.date)}
@@ -101,9 +101,9 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
                   <div className="flex items-center gap-4">
                     <span className={cn(
                       "font-medium",
-                      transaction.type === 'in' ? 'text-green-600' : 'text-red-600'
+                      transaction.type === 'IN' ? 'text-green-600' : 'text-red-600'
                     )}>
-                      {transaction.type === 'in' ? '+' : ''}{transaction.amount.toFixed(2)} ₽
+                      {transaction.type === 'IN' ? '+' : ''}{transaction.amount.toFixed(2)} ₽
                     </span>
                     <div className="flex gap-2">
                       <EditTransactionDialog
@@ -113,7 +113,7 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
                           size="icon"
                           className="w-8 h-8"
                           {...props}
-                          // onClick={() => handleEdit(transaction)}
+                        // onClick={() => handleEdit(transaction)}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>}
@@ -139,7 +139,7 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
       <Dialog open={!!deletingTransaction} onOpenChange={() => setDeletingTransaction(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Удалить транзакцию</DialogTitle>
+            <DialogTitle className="mb-3">Удалить транзакцию</DialogTitle>
             <DialogDescription>
               Вы уверены, что хотите удалить эту транзакцию? Это действие нельзя отменить.
             </DialogDescription>
@@ -149,9 +149,25 @@ export default function TransactionList({ days = [{ "start": "2024-11-30T00:00:0
               Отмена
             </Button>
             <Button
+              disabled={isPending}
               variant="destructive"
-              onClick={() => setDeletingTransaction(null)}
+              onClick={async () => {
+                try {
+                  if (!deletingTransaction) return
+                  await deleteTransaction({
+                    id: deletingTransaction?.id
+                  })
+                  toast.success('Транзакция успешно удалена')
+                  utils.transaction.get.invalidate()
+                  utils.transaction.get.refetch()
+                  setDeletingTransaction(null)
+                } catch (e) {
+                  console.error(e)
+                  toast.error('Ошибка удаления транзакции: ' + e.message)
+                }
+              }}
             >
+              {isPending && <Loader className="w-4 h-4 animate-spin" />}
               Удалить
             </Button>
           </DialogFooter>

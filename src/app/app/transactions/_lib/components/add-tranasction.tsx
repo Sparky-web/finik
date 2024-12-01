@@ -48,6 +48,21 @@ interface AddTransactionDialogProps {
     type: 'IN' | 'OUT'
 }
 
+export const convertDate = (isoString: string) => {
+    const date = new Date(isoString);
+
+    // Get components of the date
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    // Combine into `datetime-local` format
+    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+    return formattedDate;
+}
+
 export function AddTransactionDialog({ triggerButton: CustomTriggerButton, customOpen, onOpenChange, type }: AddTransactionDialogProps) {
     const [open, setOpen] = React.useState(false)
     const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -64,10 +79,12 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
 
     const user = useAppSelector(e => e.user?.user)
 
+    const utils = api.useUtils()
+
     const form = useForm({
         defaultValues: {
             type: type,
-            date: new Date().toISOString().split('.')[0],
+            date: convertDate(new Date().toISOString()),
             amount: "",
             category: '',
             categoryId: null,
@@ -77,14 +94,21 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
             try {
                 const values = data.value
 
-                if(!values.categoryId) throw new Error('Выберите категорию')
+                if (!values.categoryId) throw new Error('Выберите категорию')
 
                 await addTransaction({
                     type: values.type,
                     categoryId: values.categoryId,
                     amount: +values.amount,
-                    userId: user?.id
+                    userId: user?.id,
+                    date: new Date(values.date).toISOString(),
+                    commentary: values.notes
                 })
+
+                utils.transaction.get.invalidate()
+                utils.transaction.get.refetch()
+
+                
                 toast.success('Транзакция успешно добавлена')
                 setOpen(false)
             } catch (e) {
