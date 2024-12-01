@@ -277,24 +277,24 @@ export const userRouter = createTRPCRouter({
         },
       }) ?? 0
 
-      var sumin1: any = transin._sum.amount ?? 0;
-      var sumin2: any = transin1._sum.amount ?? 0;
-      var sumout1: any = transout._sum.amount ?? 0;
-      var sumout2: any = transout1._sum.amount ?? 0;
-      var aboba1 = 0;
-      var aboba2 = 0;
+      var sumin1: any = transin._sum.amount ?? null;
+      var sumin2: any = transin1._sum.amount ?? null;
+      var sumout1: any = transout._sum.amount ?? null;
+      var sumout2: any = transout1._sum.amount ?? null;
+      var aboba1: any = 0;
+      var aboba2: any = 0;
 
       if (sumin1 > sumin2){
-        if(sumin2 == 0){
-          aboba1 = 0
+        if(sumin2 == null){
+          aboba1 = null
         }
         else{
           aboba1 = (sumin1/sumin2)*100
         }
       }
       else if(sumin1 < sumin2){
-        if(sumin1 == 0){
-          aboba1 = 0
+        if(sumin1 == null){
+          aboba1 = null
         }
         else{
           aboba1 = (sumin2/sumin1)*100
@@ -305,15 +305,15 @@ export const userRouter = createTRPCRouter({
       }
 
       if (sumout1 > sumout2){
-        if(sumout2 == 0 || sumout1 == 0){
-          aboba2 = 0
+        if(sumout2 == null || sumout1 == null){
+          aboba2 = null
         }
         else{
           aboba2 = (sumout1/sumout2)*100
         }
       }
       else if(sumout1 < sumout2){
-        if(sumout1 == 0 || sumout1 == 0){
+        if(sumout1 == null || sumout1 == null){
           aboba2 = 0
         }
         else{
