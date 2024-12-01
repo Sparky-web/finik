@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { INPUT_VALIDATION_RULES } from "node_modules/react-hook-form/dist/constants";
 import { z } from "zod";
 
 import {
@@ -6,6 +7,8 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+
+const moment = require('moment');
 
 export const userRouter = createTRPCRouter({
   create: publicProcedure
@@ -98,6 +101,96 @@ export const userRouter = createTRPCRouter({
 
     return trans ?? null;
   }),
+
+    addMoney: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          balance: {
+            increment: input.money
+          }
+            
+        },
+      });
+    }),
+
+    addMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          savings: {
+            increment: input.money
+          }
+            
+        },
+      });
+    }),
+
+    removeMoney: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          balance: {
+            decrement: input.money
+          }
+            
+        },
+      });
+    }),
+
+    removeMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          savings: {
+            decrement: input.money
+          }
+            
+        },
+      });
+    }),
+
+    getMonth: protectedProcedure.query(async ({ ctx }) => {
+
+      const firstdate = moment().startOf('month').format('DD-MM-YYYY');
+      const lastdate=moment().endOf('month').format("DD-MM-YYYY");
+      
+      const trans = await ctx.db.transaction.groupBy({
+        where: {
+            User: {
+                id: ctx.session.user.id
+            },
+            date: {
+              gte: firstdate,
+              lte: lastdate,
+            }
+        },
+       _sum: {
+               amount: true
+            },
+            orderBy: undefined,
+            by: ["type", "categoryId"]
+      
+    })
+
+    return trans ?? null;
+      }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
