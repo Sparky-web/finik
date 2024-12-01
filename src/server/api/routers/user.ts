@@ -229,7 +229,8 @@ export const userRouter = createTRPCRouter({
         _sum: {
           amount: true
         },
-      })
+      }) ?? 0
+      console.log(`----------------- ${transin._sum.amount}----------------------`);
       const transout = await ctx.db.transaction.aggregate({
         where: {
           User: {
@@ -244,7 +245,7 @@ export const userRouter = createTRPCRouter({
         _sum: {
           amount: true
         },
-      })
+      }) ?? 0
       const transin1 = await ctx.db.transaction.aggregate({
         where: {
           User: {
@@ -259,7 +260,7 @@ export const userRouter = createTRPCRouter({
         _sum: {
           amount: true
         },
-      })
+      }) ?? 0
       const transout1 = await ctx.db.transaction.aggregate({
         where: {
           User: {
@@ -274,32 +275,52 @@ export const userRouter = createTRPCRouter({
         _sum: {
           amount: true
         },
-      })
+      }) ?? 0
 
-      var sumin1: any =  transin._sum;
-      var sumin2: any = transin1._sum;
-      var sumout1: any = transout._sum;
-      var sumout2: any = transout1._sum;
+      var sumin1: any = transin._sum.amount ?? 0;
+      var sumin2: any = transin1._sum.amount ?? 0;
+      var sumout1: any = transout._sum.amount ?? 0;
+      var sumout2: any = transout1._sum.amount ?? 0;
       var aboba1 = 0;
       var aboba2 = 0;
 
-      if (transin._sum > transin1._sum){
-        aboba1 = (sumin1/sumin2)*100
+      if (sumin1 > sumin2){
+        if(sumin2 == 0){
+          aboba1 = 0
+        }
+        else{
+          aboba1 = (sumin1/sumin2)*100
+        }
       }
-      else if(transin._sum <= transin1._sum){
-        aboba1 = (sumin2/sumin1)*100
+      else if(sumin1 < sumin2){
+        if(sumin1 == 0){
+          aboba1 = 0
+        }
+        else{
+          aboba1 = (sumin2/sumin1)*100
+        }
       }
-      else if(transin._sum == transin1._sum){
+      else if(sumin1 == sumin2){
         aboba1 = 0;
       }
 
-      if (transout._sum > transout1._sum){
-        aboba2 = (sumin1/sumin2)*100
+      if (sumout1 > sumout2){
+        if(sumout2 == 0 || sumout1 == 0){
+          aboba2 = 0
+        }
+        else{
+          aboba2 = (sumout1/sumout2)*100
+        }
       }
-      else if(transout._sum <= transout1._sum){
-        aboba2 = (sumin2/sumin1)*100
+      else if(sumout1 < sumout2){
+        if(sumout1 == 0 || sumout1 == 0){
+          aboba2 = 0
+        }
+        else{
+          aboba2 = (sumout2/sumout1)*100
+        }
       }
-      else if(transout._sum == transout1._sum){
+      else if(sumout1 == sumout2){
         aboba2 = 0;
       }
 
@@ -307,8 +328,8 @@ export const userRouter = createTRPCRouter({
     return [{
       balance: user?.balance,
       saving: user?.savings,
-      in: transin._sum,
-      out: transout._sum,
+      in: transin._sum.amount,
+      out: transout._sum.amount,
       inPercent: aboba1,
       outPercent: aboba2
 

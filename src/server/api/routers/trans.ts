@@ -13,6 +13,32 @@ export const transRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime() }))
     .mutation(async ({ ctx, input }) => {
+    
+      if(input.type == "IN"){
+        const user = await ctx.db.user.update({
+          where: {
+            id: input.userId
+          },
+          data: {
+            balance: {
+              increment: input.amount
+            }
+          }
+        })
+      }
+      else if (input.type == "OUT"){
+        const user = await ctx.db.user.update({
+          where: {
+            id: input.userId
+          },
+          data: {
+            balance: {
+              decrement: input.amount
+            }
+          }
+        })
+      }
+      
       return ctx.db.transaction.create({
         data: {
           date: input.date,
