@@ -8,7 +8,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
-// const moment = require('moment');
+import moment from 'moment';
 
 export const userRouter = createTRPCRouter({
   create: publicProcedure
@@ -166,30 +166,154 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
+    setMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          savings: input.money
+            
+        },
+      });
+    }),
+
+    setMoney: protectedProcedure
+    .input(z.object({ money: z.number()}))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id : ctx.session.user.id
+        },
+        data: {
+          balance: input.money
+            
+        },
+      });
+    }),
+
+
+
     getMonth: protectedProcedure.query(async ({ ctx }) => {
 
       const firstdate = moment().startOf('month').format('DD-MM-YYYY');
       const lastdate=moment().endOf('month').format("DD-MM-YYYY");
-      
-      const trans = await ctx.db.transaction.groupBy({
-        where: {
-            User: {
-                id: ctx.session.user.id
-            },
-            date: {
-              gte: firstdate,
-              lte: lastdate,
-            }
-        },
-       _sum: {
-               amount: true
-            },
-            orderBy: undefined,
-            by: ["type"]
-      
-    })
+      const firstmonth =moment().subtract(1, 'months').startOf('month').format('DD-MM-YYYY');
+      const lastmonth=moment().subtract(1, 'months').endOf('month').format('DD-MM-YYYY')
 
-    return trans ?? null;
+
+
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: ctx.session.user.id
+        }
+      })
+
+  
+
+      
+      const transin = await ctx.db.transaction.aggregate({
+        where: {
+          User: {
+            id: ctx.session.user.id,
+          },
+          type: "IN",
+          date: {
+            gte: firstdate,
+            lte: lastdate,
+          }
+        },
+        _sum: {
+          amount: true
+        },
+      })
+      const transout = await ctx.db.transaction.aggregate({
+        where: {
+          User: {
+            id: ctx.session.user.id,
+          },
+          type: "OUT",
+          date: {
+            gte: firstdate,
+            lte: lastdate,
+          }
+        },
+        _sum: {
+          amount: true
+        },
+      })
+      const transin1 = await ctx.db.transaction.aggregate({
+        where: {
+          User: {
+            id: ctx.session.user.id,
+          },
+          type: "IN",
+          date: {
+            gte: firstmonth,
+            lte: lastmonth,
+          }
+        },
+        _sum: {
+          amount: true
+        },
+      })
+      const transout1 = await ctx.db.transaction.aggregate({
+        where: {
+          User: {
+            id: ctx.session.user.id,
+          },
+          type: "OUT",
+          date: {
+            gte: firstmonth,
+            lte: lastmonth,
+          }
+        },
+        _sum: {
+          amount: true
+        },
+      })
+
+      var sumin1: any =  transin._sum;
+      var sumin2: any = transin1._sum;
+      var sumout1: any = transout._sum;
+      var sumout2: any = transout1._sum;
+      var aboba1 = 0;
+      var aboba2 = 0;
+
+      if (transin._sum > transin1._sum){
+        aboba1 = (sumin1/sumin2)*100
+      }
+      else if(transin._sum <= transin1._sum){
+        aboba1 = (sumin2/sumin1)*100
+      }
+      else if(transin._sum == transin1._sum){
+        aboba1 = 0;
+      }
+
+      if (transout._sum > transout1._sum){
+        aboba2 = (sumin1/sumin2)*100
+      }
+      else if(transout._sum <= transout1._sum){
+        aboba2 = (sumin2/sumin1)*100
+      }
+      else if(transout._sum == transout1._sum){
+        aboba2 = 0;
+      }
+
+
+    return [{
+      balance: user?.balance,
+      saving: user?.savings,
+      in: transin._sum,
+      out: transout._sum,
+      inPercent: aboba1,
+      outPercent: aboba2
+
+
+
+    }];
       }),
 
   getSecretMessage: protectedProcedure.query(() => {
