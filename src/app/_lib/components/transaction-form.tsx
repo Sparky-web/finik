@@ -1,6 +1,6 @@
 import { Category } from "@prisma/client"
 import { FormApi, ReactFormApi, useField } from "@tanstack/react-form"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Loader } from "lucide-react"
 import React from "react"
 import { useEffect, useRef } from "react"
 import { FormSelectField } from "~/components/custom/form-select-field"
@@ -57,7 +57,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
             e.preventDefault()
             form.handleSubmit()
         }} className="grid gap-2">
-            <form.Field name="type">
+            {/* <form.Field name="type">
                 {field => <FormSelectField options={[
                     {
                         label: 'Доход',
@@ -71,7 +71,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                     <Label>Тип транзакции</Label>
                 </FormSelectField>
                 }
-            </form.Field>
+            </form.Field> */}
 
             <form.Field name="amount">
                 {field => <FormTextField field={field} type="number">
@@ -91,8 +91,9 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={open}
+                                    size="lg"
                                     ref={ref}
-                                    className="w-full justify-between"
+                                    className="w-full justify-between px-3"
                                 >
                                     {field.state.value
                                         ? categoriesFiltered.find((category) => category.id === field.state.value)?.name || 'Выберите категорию...'
@@ -161,9 +162,15 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 }
             </form.Field>
 
-            <Button type="submit" className=" mt-3 w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-semibold py-3 rounded-lg shadow-lg transform transition duration-300 hover:scale-101">
-                Сохранить
-            </Button>
+            <form.Subscribe selector={(form) => [form.isSubmitting, form.canSubmit]}>
+                {([isSubmitting, canSubmit]) => (
+
+                    <Button type="submit" disabled={!canSubmit || isSubmitting} className=" mt-3 w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-semibold py-3 rounded-lg shadow-lg transform transition duration-300 hover:scale-101">
+                        {isSubmitting && <Loader className="w-4 h-4 mr-2 animate-spin" />}
+                        Сохранить
+                    </Button>
+                )}
+            </form.Subscribe>
         </form>
     )
 }

@@ -37,6 +37,9 @@ import { cn } from "~/lib/utils"
 import { Transaction } from '@prisma/client'
 import { P } from '~/components/ui/typography'
 import TransactionForm from '~/app/_lib/components/transaction-form'
+import { api } from '~/trpc/react'
+import { toast } from 'sonner'
+import { useAppSelector } from '~/app/_lib/client-store'
 
 interface AddTransactionDialogProps {
     customOpen?: boolean
@@ -49,6 +52,8 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
     const [open, setOpen] = React.useState(false)
     const isDesktop = useMediaQuery("(min-width: 768px)")
 
+    const { mutateAsync: addTransaction, isPending } = api.transaction.create.useMutation()
+
     React.useEffect(() => {
         if (customOpen) setOpen(customOpen)
     }, [customOpen])
@@ -57,18 +62,34 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
         if (onOpenChange) onOpenChange(open)
     }, [open])
 
+    const user = useAppSelector(e => e.user?.user)
+
     const form = useForm({
         defaultValues: {
             type: type,
             date: new Date().toISOString().split('.')[0],
-            amount: 0,
+            amount: "",
             category: '',
             categoryId: null,
             notes: '',
         },
-        onSubmit: (data) => {
-            console.log(data)
-            setOpen(false)
+        onSubmit: async (data) => {
+            try {
+                const values = data.value
+
+                if(!values.categoryId) throw new Error('Выберите категорию')
+
+                await addTransaction({
+                    type: values.type,
+                    categoryId: values.categoryId,
+                    amount: +values.amount,
+                    userId: user?.id
+                })
+                toast.success('Транзакция успешно добавлена')
+                setOpen(false)
+            } catch (e) {
+                toast.error('Ошибка добавления транзакции: ' + e.message)
+            }
         }
     })
 
@@ -94,7 +115,7 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
                 {!onOpenChange && <DialogTrigger asChild>{triggerButton}</DialogTrigger>}
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="font-semibold">Добавить транзакцию</DialogTitle>
+                        <DialogTitle className="font-semibold">Добавить {type === 'IN' ? 'доход' : 'трату'}</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
                             {/* {transaction} */}
                         </DialogDescription>
@@ -107,10 +128,10 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
 
     return (
         <Drawer open={open} onOpenChange={setOpen}>
-           {!onOpenChange && <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>}
+            {!onOpenChange && <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>}
             <DrawerContent>
                 <DrawerHeader className="text-center">
-                    <DrawerTitle className="text-xl font-semibold">Добавить транзакцию</DrawerTitle>
+                    <DrawerTitle className="text-xl font-semibold">Добавить {type === 'IN' ? 'доход' : 'трату'}</DrawerTitle>
                     {/* <DrawerDescription className="text-gray-600">
             Переведите средства между вашими счетами.
           </DrawerDescription> */}

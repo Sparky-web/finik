@@ -1,3 +1,4 @@
+'use client'
 import { H2 } from "~/components/ui/typography";
 import ExpenseCategories from "./_lib/components/categories";
 import {
@@ -10,8 +11,13 @@ import { PeriodSelector } from "~/app/_lib/components/period-selector";
 import ClientActions from "./_lib/components/client-actions";
 import Card from "~/app/_lib/components/card";
 import TransactionList from "./_lib/components/transactions-list";
+import { api } from "~/trpc/react";
 
 export default function Transactions() {
+    const {data} = api.user.getSumm.useQuery()
+    const {data: transactions} = api.user.getIn.useQuery()
+    console.log(transactions)
+
     return (
         <div className="grid gap-6">
             <H2>Транзакции</H2>

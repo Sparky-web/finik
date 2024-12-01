@@ -1,3 +1,4 @@
+'use client'
 import { H1, H2, H3, H4 } from "~/components/ui/typography";
 import { auth } from "~/server/auth";
 import wave from "./_lib/images/wave.png"
@@ -6,12 +7,13 @@ import Card, { CardTitle } from "~/app/_lib/components/card";
 import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, Pencil, Wallet } from "lucide-react";
 import ActionsMenu from "~/app/_lib/components/menu/actions";
 import ClientActions from "./_lib/components/client-actions";
+import { useAppSelector } from "~/app/_lib/client-store";
 
 
-export default async function Summary() {
-    const session = await auth()
+export default function Summary() {
+    const user = useAppSelector(e => e.user?.user)
 
-
+    // const {data} = api
 
     return (
         <div className="grid gap-6">
@@ -19,7 +21,7 @@ export default async function Summary() {
                 <Image src={wave} alt="wave" width={24} height={24} objectFit="contain" />
 
                 <H2>
-                    Добро пожаловать, {session?.user?.name}
+                    Добро пожаловать, {user?.name}!
                 </H2>
             </div>
 
@@ -29,7 +31,7 @@ export default async function Summary() {
                         <div className="gap-2 grid ">
                             <CardTitle className="flex items-center gap-3">
                                 <Wallet className="w-5 h-5" />
-                                Балланс
+                                Баланс
                             </CardTitle>
                             <H2>60 000 ₽</H2>
                         </div>
@@ -41,11 +43,11 @@ export default async function Summary() {
                         <div className="gap-2 grid ">
                             <CardTitle className="flex items-center gap-3">
                                 <ArrowDownLeft className="w-5 h-5" />
-                                Доходы
+                                Доходы в этом месяце
                             </CardTitle>
                             <H2>60 000 ₽</H2>
                         </div>
-                        <span className="text-sm text-muted-foreground text-green-600">
+                        <span className="text-sm text-muted-foreground text-green-500">
                             на 2% больше, чем в предыдущем месяце
                         </span>
                     </Card>
@@ -53,7 +55,7 @@ export default async function Summary() {
                         <div className="gap-2 grid ">
                             <CardTitle className="flex items-center gap-3">
                                 <ArrowUpRight className="w-5 h-5" />
-                                Траты
+                                Траты в этом месяце
                             </CardTitle>
                             <H2>60 000 ₽</H2>
                         </div>
