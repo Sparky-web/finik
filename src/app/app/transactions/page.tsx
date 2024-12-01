@@ -14,6 +14,7 @@ import TransactionList from "./_lib/components/transactions-list";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { DateTime } from "luxon";
+import { Loader } from "lucide-react";
 
 export default function Transactions() {
     // const {data} = api.transaction.get.useQuery({})
@@ -31,10 +32,10 @@ export default function Transactions() {
 
     const [type, setType] = useState<'IN' | 'OUT'>('IN')
 
-    const { data, isPending } = api.transaction.get.useQuery({
+    const { data, isPending, isFetching } = api.transaction.get.useQuery({
         dbeg: period.dbeg,
         dend: period.dend,
-        limit: 100,
+        limit: 1000,
         offset: 0
     })
 
@@ -59,7 +60,6 @@ export default function Transactions() {
                     </Tabs>
 
                     <div className="ml-auto">
-
                         <PeriodSelector value={{
                             dbeg: DateTime.fromJSDate(period.dbeg),
                             dend: DateTime.fromJSDate(period.dend)
@@ -74,13 +74,18 @@ export default function Transactions() {
                 </div>
 
                 <ClientActions />
+
+                {isFetching && <div className="flex items-center justify-center w-full gap-3 mt-5 mb-5">
+                    <Loader className="w-5 h-5 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Загрузка данных...</p>
+                </div>}
+
                 {
                     data && <>
                         <ExpenseCategories total={data.summary[type]?.total || []} categories={data.summary[type]?.categories || []} type={type} />
                     </>
                 }
             </div>
-
 
             {data && <TransactionList days={data.transactions[type.toLowerCase()]} />}
         </div>
