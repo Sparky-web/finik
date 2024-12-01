@@ -1,9 +1,11 @@
 // import { api } from "~/trpc/server"
 
+import { redirect } from "next/navigation"
 import { auth } from "~/server/auth"
 
 export default async function Page() {
     const user = await auth()
+    return redirect('/app/summary')
 
     return (
         <div>

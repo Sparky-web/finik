@@ -40,6 +40,7 @@ import TransactionForm from '~/app/_lib/components/transaction-form'
 import { api } from '~/trpc/react'
 import { toast } from 'sonner'
 import { useAppSelector } from '~/app/_lib/client-store'
+import { zodValidator } from '@tanstack/zod-form-adapter'
 
 interface AddTransactionDialogProps {
     customOpen?: boolean
@@ -90,6 +91,7 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
             categoryId: null,
             notes: '',
         },
+        validatorAdapter: zodValidator(),
         onSubmit: async (data) => {
             try {
                 const values = data.value
@@ -107,7 +109,8 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
 
                 utils.transaction.get.invalidate()
                 utils.transaction.get.refetch()
-
+                utils.user.getMonth.invalidate()
+                utils.user.getMonth.refetch()
                 
                 toast.success('Транзакция успешно добавлена')
                 setOpen(false)

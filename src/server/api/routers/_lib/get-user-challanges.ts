@@ -1,7 +1,11 @@
 export default async function getUserChallanges(ctx: any) {
     const userChallenges = await ctx.db.userChallenge.findMany({
         include: {
-            challenge: true,
+            challenge: {
+                include: {
+                    category: true
+                }
+            }
         },
         where: {
             userId: ctx.session.user.id
@@ -31,6 +35,9 @@ export default async function getUserChallanges(ctx: any) {
             { categoryId: 'asc' },
             { durationDays: 'asc' }
         ],
+        include: {
+            category: true
+        },
         where: {
             id: { notIn: userChallenges.map(c => c.challengeId) },
             categoryId: {

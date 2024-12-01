@@ -1,5 +1,5 @@
 'use client'
-import { CalendarDays, Home, User, Upload, Users, File, AlertCircleIcon, Bug, ArrowLeftRight, Wallet, MedalIcon } from "lucide-react";
+import { CalendarDays, Home, User, Upload, Users, File, AlertCircleIcon, Bug, ArrowLeftRight, Wallet, MedalIcon, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FC, ReactElement, ReactNode } from "react";
@@ -26,15 +26,20 @@ const menu: MenuItem[] = [
         path: '/app/transactions',
         icon: ArrowLeftRight
     },
-    {
-        title: 'Счета',
-        path: '/app/accounts',
-        icon: Wallet
-    },
+    // {
+    //     title: 'Счета',
+    //     path: '/app/accounts',
+    //     icon: Wallet
+    // },
     {
         title: 'Вызовы',
         path: '/app/challanges',
         icon: MedalIcon
+    },
+    {
+        title: "Выйти",
+        path: "/auth/signout",
+        icon: LogOut 
     }
 
     // {

@@ -34,7 +34,7 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
   const progress = calculateProgress(data.startDate, data.endDate, data.challenge.durationDays)
 
   const { mutateAsync: takeChallenge, isPending } = api.challengeUser.takeChallenge.useMutation()
-  const { mutateAsync: restartChallenge , isPending: isRestartPending } = api.challengeUser.restartChallenge.useMutation()
+  const { mutateAsync: restartChallenge, isPending: isRestartPending } = api.challengeUser.restartChallenge.useMutation()
 
   const isLoading = isPending || isRestartPending
   const utils = api.useUtils()
@@ -90,20 +90,20 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
     switch (data.status) {
       case "IN_PROGRESS":
         return (
-          <Badge variant="secondary" className="bg-[#FFF7E6] text-[#FFB800] hover:bg-[#FFF7E6]">
+          <Badge variant="secondary" className="bg-[#FFF7E6] text-[#FFB800] hover:bg-[#FFF7E6] whitespace-nowrap">
             в процессе
           </Badge>
         )
       case "COMPLETED":
         return (
-          <Badge variant="secondary" className="bg-[#E8F5EC] text-[#00A83C] hover:bg-[#E8F5EC]">
+          <Badge variant="secondary" className="bg-[#E8F5EC] text-[#00A83C] hover:bg-[#E8F5EC] whitespace-nowrap">
             выполнено
           </Badge>
         )
       case "FAILED":
         return (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-[#FFE5E5] text-[#FF3B30] hover:bg-[#FFE5E5]">
+            <Badge variant="secondary" className="bg-[#FFE5E5] text-[#FF3B30] hover:bg-[#FFE5E5]  whitespace-nowrap">
               провалено
             </Badge>
             <Button
@@ -119,7 +119,7 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
       case "NEW":
         return (
           <Button
-          disabled={isLoading}
+            disabled={isLoading}
             size={'sm'}
             onClick={takeChallengeHandler}
           >
@@ -131,7 +131,7 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
   }
 
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-white">
+    <div className="flex items-center gap-3 rounded-xl bg-white">
       <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
         {getChallengeIcon(data.challenge.categoryId)}
       </div>
@@ -140,11 +140,12 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
           <h3 className={cn("font-medium mb-0 text-sm", data.status === "NEW" && 'text-primary', data.status === 'COMPLETED' && 'text-green-500', data.status === 'FAILED' && 'text-red-500')}>{data.challenge.name}</h3>
           {getStatusBadge()}
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          не покупать товары из категеории "{data.challenge.category.name}" в течении дней: {data.challenge.durationDays}
+        </p>
         {data.status !== "NEW" && data.status !== "COMPLETED" && data.status !== "FAILED" && (
           <div className="flex flex-col gap-2">
-            {/* <p className="text-sm text-muted-foreground">
-            можно сэкономить 15 000 ₽
-          </p> */}
 
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100">
               <div

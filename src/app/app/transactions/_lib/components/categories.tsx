@@ -10,6 +10,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "~/components/ui/chart"
+import { cn } from "~/lib/utils"
 
 interface Category {
     name: string
@@ -29,7 +30,9 @@ export const formatAmount = (amount: number) => {
 export default function ExpenseCategories({
     total,
     type,
-    categories
+    categories,
+    selectedCategories,
+    setSelectedCategories
 }: ExpenseCategoriesProps) {
     const [expanded, setExpanded] = React.useState(false)
 
@@ -47,8 +50,6 @@ export default function ExpenseCategories({
 
         return mainCategories
     }, [sortedCategories, expanded])
-
-
 
     const chartConfig = React.useMemo(() => {
         return Object.fromEntries(
@@ -72,16 +73,29 @@ export default function ExpenseCategories({
                         {displayedCategories.map((category) => (
                             <div
                                 onClick={() => {
-                                    category.name === 'Остальное' ? setExpanded(true) : {}
+                                    if (category.name === 'Остальное') {
+                                        setExpanded(true)
+                                        return
+                                    }
+
+                                    if (selectedCategories.includes(category.name)) {
+                                        setSelectedCategories(selectedCategories.filter(e => e !== category.name))
+                                    } else {
+                                        setSelectedCategories([...selectedCategories, category.name])
+                                    }
                                 }}
                                 key={category.name}
-                                className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors"
+                                className={
+                                    cn("flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors",
+                                        selectedCategories.includes(category.name) && 'bg-primary text-white hover:bg-primary/90'
+                                    )
+                                }
                             >
                                 <div
                                     className="w-2 h-2 rounded-full flex-shrink-0"
                                     style={{ backgroundColor: category.color }}
                                 />
-                                <span className="text-xs text-gray-700">{category.name}</span>
+                                <span className="text-xs ">{category.name}</span>
                                 <span className="text-xs font-medium">
                                     {formatAmount(category.amount)} ₽
                                 </span>
@@ -157,7 +171,7 @@ export default function ExpenseCategories({
                     </ChartContainer>
                 </div>
             </div>
-        </Card>
+        </Card >
     )
 }
 

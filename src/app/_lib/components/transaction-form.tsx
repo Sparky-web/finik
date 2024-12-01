@@ -10,6 +10,7 @@ import { Button } from "~/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "~/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover"
 import { cn } from "~/lib/utils"
+import { z } from "~/lib/utils/zod-russian"
 import { api } from "~/trpc/react"
 
 interface FormInterface {
@@ -40,8 +41,6 @@ export default function TransactionForm({ form }: TransactionFormProps) {
     const typeField = form.useField({
         name: "type",
     })
-
-    console.log(form.state.values.date)
 
     const {data: categories} = api.category.get.useQuery()
 
@@ -78,8 +77,10 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 }
             </form.Field> */}
 
-            <form.Field name="amount">
-                {field => <FormTextField field={field} type="number">
+            <form.Field name="amount" validators={{
+                onChange: z.string().refine(e => +e > 0, 'Сумма должна быть больше 0')
+            }}>
+                {field => <FormTextField field={field} type="number" min={0}>
                     <Label>Сумма (₽)</Label>
                 </FormTextField>
                 }

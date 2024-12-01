@@ -39,6 +39,7 @@ import TransactionForm from '~/app/_lib/components/transaction-form'
 import { convertDate } from './add-tranasction'
 import { toast } from 'sonner'
 import { api } from '~/trpc/react'
+import { zodValidator } from '@tanstack/zod-form-adapter'
 
 interface EditTransactionDialogProps {
   transaction: Transaction,
@@ -68,6 +69,7 @@ export function EditTransactionDialog({ transaction, triggerButton: CustomTrigge
       notes: transaction.commentary || '',
       type: transaction.type
     },
+    validatorAdapter: zodValidator(),
     onSubmit: async (data) => {
       const values = data.value
 
@@ -82,6 +84,8 @@ export function EditTransactionDialog({ transaction, triggerButton: CustomTrigge
 
         utils.transaction.get.invalidate()
         utils.transaction.get.refetch()
+        utils.user.getMonth.invalidate()
+        utils.user.getMonth.refetch()
         toast.success('Транзакция успешно изменена')
         setOpen(false)
       } catch (e) {

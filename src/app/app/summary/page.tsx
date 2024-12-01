@@ -10,17 +10,23 @@ import ClientActions from "./_lib/components/client-actions";
 import { useAppSelector } from "~/app/_lib/client-store";
 import { api } from "~/trpc/react";
 import { formatAmount } from "../transactions/_lib/components/categories";
+import { ChallengeCard } from "../challanges/_lib/components/challange-card";
 
 
 export default function Summary() {
     const user = useAppSelector(e => e.user?.user)
-    const [_,{data: challanges} ]= api.challengeUser.getAll.useSuspenseQuery()
-    const [_1, {data}] = api.user.getMonth.useSuspenseQuery()
+    const [_, { data: challanges }] = api.challengeUser.getAll.useSuspenseQuery()
+    const [_1, { data }] = api.user.getMonth.useSuspenseQuery()
 
-
-    if(!challanges || !data) return <div>Loading...</div>
+    if (!challanges || !data) return <div>Loading...</div>
 
     const userData = data[0]
+
+    const challangesData = [
+        ...challanges.in_progress,
+        ...challanges.new.slice(0, 2),
+        ...challanges.completed.slice(0, 1)
+    ]
     // const {data} = api
 
     return (
@@ -43,9 +49,7 @@ export default function Summary() {
                             </CardTitle>
                             <H2>{formatAmount(userData?.balance)} ₽</H2>
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                            на накопительном счете {formatAmount(userData?.saving)} ₽
-                        </span>
+
                     </Card>
                     <Card className="content-between">
                         <div className="gap-2 grid ">
@@ -55,9 +59,11 @@ export default function Summary() {
                             </CardTitle>
                             <H2>{formatAmount(userData?.in)} ₽</H2>
                         </div>
-                        <span className="text-sm text-muted-foreground text-green-500">
-                            на {userData?.inPercent}% больше, чем в предыдущем месяце
-                        </span>
+                        {userData?.inPercent !== null && <span className="text-sm text-muted-foreground text-green-500">
+                            {/* на {userData?.inPercent}% больше, чем в предыдущем месяце */}
+                            {userData?.inPercent > 0 && <span className="text-green-500">на {userData?.inPercent.toFixed(0)}% больше, чем в предыдущем месяце</span>}
+                            {userData?.inPercent < 0 && <span className="text-red-500">на {Math.abs(userData?.inPercent).toFixed(0)}% меньше, чем в предыдущем месяце</span>}
+                        </span>}
                     </Card>
                     <Card className="content-between">
                         <div className="gap-2 grid ">
@@ -70,12 +76,23 @@ export default function Summary() {
                             </H2>
                         </div>
                         <span className="text-sm text-muted-foreground text-red-600">
-                            на {userData?.outPercent}% больше, чем в предыдущем месяце
+                            {/* на {userData?.outPercent}% больше, чем в предыдущем месяце */}
+                            {userData?.outPercent > 0 && <span className="text-red-500">на {userData?.outPercent.toFixed(0)}% больше, чем в предыдущем месяце</span>}
+                            {userData?.outPercent < 0 && <span className="text-green-500">на {Math.abs(userData?.outPercent).toFixed(0)}% меньше, чем в предыдущем месяце</span>}
                         </span>
                     </Card>
                 </div>
-                <ClientActions />
+                <ClientActions currentBalance={userData?.balance || 0} />
             </div>
+
+            <Card>
+                <CardTitle>Вызовы</CardTitle>
+                <div className="grid gap-6">
+                    {challangesData.map((challange) => (
+                        <ChallengeCard key={challange.id} data={challange} />
+                    ))}
+                </div>
+            </Card>
         </div>
     )
 }

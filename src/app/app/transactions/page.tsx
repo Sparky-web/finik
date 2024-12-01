@@ -12,7 +12,7 @@ import ClientActions from "./_lib/components/client-actions";
 import Card from "~/app/_lib/components/card";
 import TransactionList from "./_lib/components/transactions-list";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { Loader } from "lucide-react";
 
@@ -39,18 +39,19 @@ export default function Transactions() {
         offset: 0
     })
 
+    useEffect(() => {
+        setSelectedCategories([])
+    }, [type])
+
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
 
     return (
         <div className="grid gap-6">
             <H2>Транзакции</H2>
             <div className="grid gap-4">
                 <div className="flex gap-4 flex-wrap">
-                    <Tabs value={accountType} onValueChange={setAccountType}>
-                        <TabsList>
-                            <TabsTrigger value="default">Основной счет</TabsTrigger>
-                            <TabsTrigger value="savings">Накопительный счет</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+
 
                     <Tabs value={type} onValueChange={setType}>
                         <TabsList>
@@ -82,12 +83,17 @@ export default function Transactions() {
 
                 {
                     data && <>
-                        <ExpenseCategories total={data.summary[type]?.total || []} categories={data.summary[type]?.categories || []} type={type} />
+                        <ExpenseCategories
+                            selectedCategories={selectedCategories}
+                            setSelectedCategories={setSelectedCategories}
+                            total={data.summary[type]?.total || []} categories={data.summary[type]?.categories || []} type={type} />
                     </>
                 }
             </div>
 
-            {data && <TransactionList days={data.transactions[type.toLowerCase()]} />}
+            {data && <TransactionList days={data.transactions[type.toLowerCase()]} selectedCategories={selectedCategories}
+
+            />}
         </div>
     )
 

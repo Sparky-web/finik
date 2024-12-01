@@ -16,13 +16,7 @@ export default function ClientActions() {
     const [addExpenseOpen, setAddExpenseOpen] = React.useState(false)
 
     const actions = [
-        {
-            title: 'Перевод между счетами',
-            icon: ArrowRightLeft,
-            onClick: () => {
-                setTransferOpen(true)
-            }
-        },
+      
         {
             title: 'Добавить доход',
             icon: ArrowDownRight,

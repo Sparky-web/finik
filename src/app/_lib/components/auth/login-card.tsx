@@ -2,7 +2,7 @@
 
 import Card, { CardTitle } from "~/app/_lib/components/card"
 import { H1, H2, H3, P } from "~/components/ui/typography"
-import Logo from "~/app/_lib/images/urtk-logo.png"
+import Logo from "~/images/logo.svg"
 import Image from "next/image"
 import { Label } from "~/components/ui/label"
 import { Input } from "~/components/ui/input"
@@ -59,7 +59,7 @@ export default function LoginCard() {
             <form className="grid gap-9" onSubmit={handleSubmit}>
                 <div className="flex gap-4 justify-between flex-wrap">
                     <H2>Финик</H2>
-                    <Image src={Logo} alt="logo" width={136} height={26} objectFit="contain" />
+                    <Image src={Logo} alt="logo" width={54} height={54} objectFit="contain" />
                 </div>
 
                 <div className="grid gap-4">

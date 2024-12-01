@@ -20,6 +20,7 @@ import { useForm } from "@tanstack/react-form"
 import { P } from "~/components/ui/typography"
 import { api } from "~/trpc/react"
 import { toast } from "sonner"
+import { formatAmount } from "./categories"
 
 interface Transaction {
   id: string
@@ -44,7 +45,7 @@ interface Category {
 }
 
 
-export default function TransactionList({ days }: { days: DayTransactions[] }) {
+export default function TransactionList({ days, selectedCategories }: { days: DayTransactions[] }) {
   const [editingTransaction, setEditingTransaction] = React.useState<Transaction | null>(null)
   const [deletingTransaction, setDeletingTransaction] = React.useState<Transaction | null>(null)
 
@@ -76,64 +77,66 @@ export default function TransactionList({ days }: { days: DayTransactions[] }) {
   return (
     <div className="space-y-6">
 
-      {days.map((day) => (
-        <div key={day.start} className="space-y-4">
-          <h2 className="text-lg font-semibold">{formatDate(day.start)}</h2>
-          <div className="space-y-2">
-            {day.items.map((transaction) => {
-              const Icon = icons[transaction.icon]
-              return (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
-                >
-                  <div className="flex items-center gap-4">
-                    {Icon && <Icon className="w-5 h-5" />}
-                    <div>
-                      <div className="font-medium flex items-center gap-2 content-center">{transaction.category}
-                        <div className="w-4 h-4 rounded-md mt-0.25" style={{ backgroundColor: transaction.color }} />
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatTime(transaction.date)}
+      {days
+        .filter(e => selectedCategories.length === 0 || selectedCategories.some(c => e.items.find(i => i.category === c)))
+        .map((day) => (
+          <div key={day.start} className="space-y-4">
+            <h2 className="text-lg font-semibold">{formatDate(day.start)}</h2>
+            <div className="space-y-2">
+              {day.items.filter(e => selectedCategories.length === 0 || selectedCategories.some(c => e.category === c)).map((transaction) => {
+                const Icon = icons[transaction.icon]
+                return (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      {Icon && <Icon className="w-5 h-5" />}
+                      <div>
+                        <div className="font-medium flex items-center gap-2 content-center">{transaction.category}
+                          <div className="w-4 h-4 rounded-md mt-0.25" style={{ backgroundColor: transaction.color }} />
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatTime(transaction.date)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className={cn(
-                      "font-medium",
-                      transaction.type === 'IN' ? 'text-green-600' : 'text-red-600'
-                    )}>
-                      {transaction.type === 'IN' ? '+' : ''}{transaction.amount.toFixed(2)} ₽
-                    </span>
-                    <div className="flex gap-2">
-                      <EditTransactionDialog
-                        transaction={transaction}
-                        triggerButton={(props) => <Button
+                    <div className="flex items-center gap-4">
+                      <span className={cn(
+                        "font-medium",
+                        transaction.type === 'IN' ? 'text-green-600' : 'text-red-600'
+                      )}>
+                        {transaction.type === 'IN' ? '+' : ''}{formatAmount(transaction.amount)} ₽
+                      </span>
+                      <div className="flex gap-2">
+                        <EditTransactionDialog
+                          transaction={transaction}
+                          triggerButton={(props) => <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-8 h-8"
+                            {...props}
+                          // onClick={() => handleEdit(transaction)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>}
+                        />
+                        <Button
                           variant="ghost"
                           size="icon"
                           className="w-8 h-8"
-                          {...props}
-                        // onClick={() => handleEdit(transaction)}
+                          onClick={() => handleDelete(transaction)}
                         >
-                          <Pencil className="w-4 h-4" />
-                        </Button>}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-8 h-8"
-                        onClick={() => handleDelete(transaction)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
 
       <Dialog open={!!deletingTransaction} onOpenChange={() => setDeletingTransaction(null)}>

@@ -25,6 +25,9 @@ import {
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { cn } from "~/lib/utils"
+import { api } from '~/trpc/react'
+import { toast } from 'sonner'
+import { Loader } from 'lucide-react'
 
 interface AccountModificationProps {
     type: "default" | "savings"
@@ -41,7 +44,11 @@ const schema = z.object({
 
 export function AccountModificationDialog({ type, currentBalance, onSave, triggerButton: CustomTriggerButton, open: customOpen, onOpenChange: customOnOpenChange }: AccountModificationProps) {
     const [open, setOpen] = React.useState(customOpen || false)
+
     const isDesktop = useMediaQuery("(min-width: 768px)")
+
+    const { mutateAsync, isPending } = api.user.setMoney.useMutation()
+    const utils = api.useUtils()
 
     const { control, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(schema),
@@ -50,9 +57,19 @@ export function AccountModificationDialog({ type, currentBalance, onSave, trigge
         },
     })
 
-    const onSubmit = (data: z.infer<typeof schema>) => {
-        onSave(data.balance)
-        setOpen(false)
+    const onSubmit = async (data: z.infer<typeof schema>) => {
+        try {
+            await mutateAsync({
+                money: data.balance
+            })
+            utils.user.getMonth.invalidate()
+            utils.user.getMonth.refetch()
+            toast.success('Баланс изменен')
+            setOpen(false)
+        } catch (e) {
+            console.error(e)
+            toast.error('Ошибка изменения баланса: ' + e.message)
+        }
     }
 
     React.useEffect(() => {
@@ -103,7 +120,10 @@ export function AccountModificationDialog({ type, currentBalance, onSave, trigge
                 />
                 {errors.balance && <p className="text-sm text-red-500">{errors.balance.message}</p>}
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 rounded-lg shadow-lg transform transition duration-300 hover:scale-101">
+            <Button
+                disabled={isPending}
+                type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white  py-3 rounded-lg shadow-lg transform transition duration-300 hover:scale-101">
+                {isPending && <Loader className="w-4 h-4 animate-spin" />}
                 Сохранить
             </Button>
         </form>
@@ -112,7 +132,7 @@ export function AccountModificationDialog({ type, currentBalance, onSave, trigge
     if (isDesktop) {
         return (
             <Dialog open={open} onOpenChange={setOpen}>
-                {!customOpen &&<DialogTrigger asChild>{triggerButton}</DialogTrigger>}
+                {!customOnOpenChange && <DialogTrigger asChild>{triggerButton}</DialogTrigger>}
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className="mb-2">{accountTypeLabel}</DialogTitle>
@@ -128,7 +148,7 @@ export function AccountModificationDialog({ type, currentBalance, onSave, trigge
 
     return (
         <Drawer open={open} onOpenChange={setOpen}>
-            {!customOpen &&<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>}
+            {!customOnOpenChange && <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>}
             <DrawerContent>
                 <DrawerHeader className="text-center">
                     <DrawerTitle className="text-2xl font-bold">{accountTypeLabel}</DrawerTitle>

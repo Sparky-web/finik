@@ -11,7 +11,7 @@ export default function MobileMenu({ data }: MenuProps) {
     const pathname = usePathname()
 
     return (
-        <div className="fixed z-10 lg:hidden  bottom-[0px] left-0 w-full py-3 bg-card shadow-2xl grid grid-cols-[1fr,1fr,1fr] gap-3 rounded-t-xl mobile-menu"
+        <div className="fixed z-10 lg:hidden  bottom-[0px] left-0 w-full py-3 bg-card shadow-2xl grid grid-cols-[1fr,1fr,1fr,1fr] gap-3 rounded-t-xl mobile-menu"
             style={{
                 paddingBottom: 'calc(max(env(safe-area-inset-bottom, 12px), 12px) + 12px)'
             }}
