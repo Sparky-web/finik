@@ -61,16 +61,22 @@ export const userRouter = createTRPCRouter({
   getIn: protectedProcedure.query(async ({ ctx }) => {
     const trans = await ctx.db.transaction.findMany({
       orderBy: { date: "desc" },
-      where: { User: { id: ctx.session.user.id }, type: "IN" },
+      where: { User: { id: ctx.session.user.id}, type: "IN" },
+      include: {
+        category: true
+      }
     })
 
     return trans ?? null;
   }),
 
-  getOut: protectedProcedure.query(async ({ ctx }) => {
-    const trans = await ctx.db.transaction.findMany({
-      orderBy: { date: "desc" },
-      where: { User: { id: ctx.session.user.id }, type: "OUT" },
+    getOut: protectedProcedure.query(async ({ ctx }) => {
+        const trans = await ctx.db.transaction.findMany({
+          orderBy: { date: "desc" },
+          where: { User: { id: ctx.session.user.id}, type: "OUT" },
+          include: {
+            category: true
+          }
     })
 
     return trans ?? null;

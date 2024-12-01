@@ -94,6 +94,7 @@ model Transaction {
   User       User?    @relation(fields: [userId], references: [id])
   amount     Int
   userId     String?
+  commentary String? @default(" ")
 }
 
 enum Type {

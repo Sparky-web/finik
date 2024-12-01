@@ -35,15 +35,16 @@ export const challengeUserRouter = createTRPCRouter({
       });
     }),
 
+
     getbyId: publicProcedure.input(z.number()).query(async ({ ctx, input }) => {
-        const challenge = await ctx.db.challenge.findUnique({
+        const challenge = await ctx.db.userChallenge.findUnique({
           where: { id: input },
         });
         return challenge ?? null;
       }),
 
       getAll: protectedProcedure.query(async ({ ctx }) => {
-        const challenge= await ctx.db.challenge.findMany();
+        const challenge= await ctx.db.userChallenge.findMany();
         return challenge ?? null;
 
       })
