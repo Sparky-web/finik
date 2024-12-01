@@ -62,6 +62,9 @@ export const userRouter = createTRPCRouter({
     const trans = await ctx.db.transaction.findMany({
       orderBy: { date: "desc" },
       where: { User: { id: ctx.session.user.id}, type: "IN" },
+      include: {
+        category: true
+      }
     })
 
     return trans ?? null;
@@ -71,6 +74,9 @@ export const userRouter = createTRPCRouter({
         const trans = await ctx.db.transaction.findMany({
           orderBy: { date: "desc" },
           where: { User: { id: ctx.session.user.id}, type: "OUT" },
+          include: {
+            category: true
+          }
     })
     
     return trans ?? null;

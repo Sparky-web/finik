@@ -8,14 +8,16 @@ import {
 
 export const transRouter = createTRPCRouter({
     create: publicProcedure
-    .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string() }))
+    .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime()}))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transaction.create({
         data: {
+          date: input.date,
           type: input.type,
           categoryId: input.categoryId,
           amount: input.amount,
-          userId: input.userId
+          userId: input.userId,
+          commentary: input.commentary
         },
       });
     }),
