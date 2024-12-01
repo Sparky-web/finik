@@ -36,9 +36,12 @@ import { cn } from "~/lib/utils"
 import { Transaction } from '@prisma/client'
 import { P } from '~/components/ui/typography'
 import TransactionForm from '~/app/_lib/components/transaction-form'
+import { convertDate } from './add-tranasction'
+import { toast } from 'sonner'
+import { api } from '~/trpc/react'
 
 interface EditTransactionDialogProps {
-  transaction: Transaction & { category: string, notes: string },
+  transaction: Transaction,
   triggerButton?: React.FC<any>
 }
 
@@ -52,13 +55,39 @@ export function EditTransactionDialog({ transaction, triggerButton: CustomTrigge
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
+  const { mutateAsync: updateTransaction } = api.transaction.update.useMutation()
+
+  const utils = api.useUtils()
+
   const form = useForm({
     defaultValues: {
-      ...transaction
+      id: transaction.id,
+      date: convertDate(transaction.date || new Date().toISOString()),
+      amount: transaction.amount,
+      categoryId: transaction.categoryId,
+      notes: transaction.commentary || '',
+      type: transaction.type
     },
-    onSubmit: (data) => {
-      console.log(data)
-      setOpen(false)
+    onSubmit: async (data) => {
+      const values = data.value
+
+      try {
+        await updateTransaction({
+          id: values.id,
+          date: new Date(values.date).toISOString(),
+          amount: +values.amount,
+          categoryId: values.categoryId,
+          notes: values.notes,
+        })
+
+        utils.transaction.get.invalidate()
+        utils.transaction.get.refetch()
+        toast.success('Транзакция успешно изменена')
+        setOpen(false)
+      } catch (e) {
+        console.error(e)
+        toast.error('Ошибка изменения транзакции: ' + e.message)
+      }
     }
   })
 

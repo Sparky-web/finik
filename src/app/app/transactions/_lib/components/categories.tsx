@@ -18,34 +18,15 @@ interface Category {
 }
 
 interface ExpenseCategoriesProps {
-    total?: number
-    type?: "in" | "out"
-    categories?: Category[]
+    total: number
+    type: "IN" | "OUT"
+    categories: Category[]
 }
 
 export default function ExpenseCategories({
-    total = 80592,
-    type = "out",
-    categories = [
-        { "name": "Переводы", "amount": 13230, "color": "#FFA500" },
-        { "name": "Фастфуд", "amount": 12624, "color": "#FF4500" },
-        { "name": "Авиабилеты", "amount": 12004, "color": "#4682B4" },
-        { "name": "Развлечения", "amount": 8136, "color": "#FF6F61" },
-        { "name": "Отели", "amount": 7120, "color": "#8A2BE2" },
-        { "name": "Супермаркеты", "amount": 5573, "color": "#32CD32" },
-        { "name": "Такси", "amount": 4036, "color": "#FF6347" },
-        { "name": "Связь", "amount": 3839, "color": "#1E90FF" },
-        { "name": "Цветы", "amount": 3625, "color": "#FFC0CB" },
-        { "name": "Дом и ремонт", "amount": 2699, "color": "#DAA520" },
-        { "name": "Одежда и обувь", "amount": 2599, "color": "#FFA07A" },
-        { "name": "Различные товары", "amount": 2443, "color": "#708090" },
-        { "name": "Аптеки", "amount": 1047, "color": "#DC143C" },
-        { "name": "Транспорт", "amount": 420, "color": "#4682B4" },
-        { "name": "Экосистема Яндекс", "amount": 399, "color": "#6495ED" },
-        { "name": "Маркетплейсы", "amount": 399, "color": "#20B2AA" },
-        { "name": "Другое", "amount": 299, "color": "#696969" },
-        { "name": "Частные услуги", "amount": 100, "color": "#FFD700" }
-    ]
+    total,
+    type,
+    categories
 }: ExpenseCategoriesProps) {
     const [expanded, setExpanded] = React.useState(false)
 
@@ -106,22 +87,22 @@ export default function ExpenseCategories({
                             </div>
                         ))}
                     </div>
-                    {expanded &&<Button
+                    {expanded && <Button
                         variant="tenary"
                         size="xs"
                         onClick={() => setExpanded(!expanded)}
                         className="w-fit"
                     >
-                            <>
-                                <ChevronUp className="h-4 w-4" />
-                                Свернуть остальное
-                            </>
+                        <>
+                            <ChevronUp className="h-4 w-4" />
+                            Свернуть остальное
+                        </>
                     </Button>}
                 </div>
                 <div className="w-full lg:w-1/3 flex flex-col items-center">
                     <ChartContainer
                         config={chartConfig}
-                        className="w-60 h-48" 
+                        className="w-60 h-48"
                     >
                         <PieChart>
                             <ChartTooltip
@@ -161,7 +142,7 @@ export default function ExpenseCategories({
                                         return (
                                             <text x={cx} y={cy} fill="#333" textAnchor="middle" dominantBaseline="central">
                                                 <tspan x={cx} y={cy - 12} className="text-sm text-muted-foreground">
-                                                    {type === 'in' ? 'Доходы' : 'Расходы'}
+                                                    {type === 'IN' ? 'Доходы' : 'Расходы'}
                                                 </tspan>
                                                 <tspan x={cx} y={cy + 12} className="text-lg font-bold">
                                                     {formatAmount(total)} ₽

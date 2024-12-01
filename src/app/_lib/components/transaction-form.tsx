@@ -10,6 +10,7 @@ import { Button } from "~/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "~/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover"
 import { cn } from "~/lib/utils"
+import { api } from "~/trpc/react"
 
 interface FormInterface {
     type: 'IN' | 'OUT'
@@ -40,17 +41,21 @@ export default function TransactionForm({ form }: TransactionFormProps) {
         name: "type",
     })
 
+    console.log(form.state.values.date)
+
+    const {data: categories} = api.category.get.useQuery()
+
     const [popoverOpen, setPopoverOpen] = React.useState(false)
 
-    const categoriesFiltered = mockCategories.filter((category) => category.type === typeField.state.value)
+    const categoriesFiltered = (categories || []).filter((category) => category.type === typeField.state.value)
 
-    useEffect(() => {
-        if (typeField.state.value) {
-            form.setFieldValue('categoryId', categoriesFiltered[0]?.id)
-        } else {
-            form.setFieldValue('categoryId', null)
-        }
-    }, [typeField.state.value])
+    // useEffect(() => {
+    //     if (typeField.state.value) {
+    //         form.setFieldValue('categoryId', categoriesFiltered[0]?.id)
+    //     } else {
+    //         form.setFieldValue('categoryId', null)
+    //     }
+    // }, [typeField.state.value])
 
     return (
         <form onSubmit={(e) => {
@@ -84,7 +89,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 {field => (
                     <div className="grid gap-1.5">
                         <Label>Категория</Label>
-                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button
                                     disabled={!typeField.state.value}
@@ -101,13 +106,13 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0" style={{
+                            <PopoverContent className="w-full p-0 " style={{
                                 width: ref.current?.clientWidth || 'auto'
                             }}>
                                 <Command>
                                     <CommandInput placeholder="Поиск категории..." />
                                     <CommandEmpty>Категория не найдена.</CommandEmpty>
-                                    <CommandGroup>
+                                    <CommandGroup className="max-h-[300px] overflow-y-auto">
                                         {categoriesFiltered.map((category) => (
                                             <CommandItem
                                                 key={category.id}

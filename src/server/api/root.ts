@@ -5,6 +5,7 @@ import { transRouter } from "./routers/trans";
 import { userRouter } from "./routers/user";
 import { challengeRouter } from "./routers/challenge";
 import { challengeUserRouter } from "./routers/challengeUser";
+import categoryRouter from "./routers/categories";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   auth: authRouter,
   transaction: transRouter,
+  category: categoryRouter,
   user: userRouter,
   challenge: challengeRouter,
   challengeUser: challengeUserRouter
