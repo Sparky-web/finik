@@ -15,12 +15,17 @@ export default function DesktopMenu({ data }: MenuProps) {
 
     return (
         <div className="hidden lg:grid gap-6 bg-card shadow-xl px-5 content-start relative z-10 pt-8 ">
-            <H2 className="flex gap-2 content-start items-start"> 
-                <Image src={Logo} alt="Академикс" width={24} height={24} style={{
-                    transform: "translateY(8px)"
-                }} /> 
-                Академикс x УРТК
-            </H2>
+            <div className="flex gap-2 content-center items-center">
+                <Image src={Logo} alt="Академикс" width={36} height={36} style={{
+                    // transform: "translateY(-2px)"
+                }} />
+                <div className="grid gap-0">
+                    <H2>
+                        Финик
+                    </H2>
+                    <span className="text-muted-foreground text-sm">Ваш финансовый учет</span>
+                </div>
+            </div>
             <div className="grid gap-2">
                 {data.map(item => {
                     const isActive = pathname.includes(item.path)

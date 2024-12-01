@@ -15,6 +15,6 @@ export default function Card({ children, ...props }: Props) {
 
 export function CardTitle({ children, ...props }: Props) {
     return (
-        <H4 {...props} className={cn('font-semibold', props.className)}>{children}</H4>
+        <H4 {...props} className={cn('font-medium', props.className)}>{children}</H4>
     )
 }

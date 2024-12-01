@@ -79,15 +79,15 @@ export default function LoginCard() {
                 form.handleSubmit()
             }}>
                 <div className="flex gap-4 justify-between flex-wrap">
-                    <H2>Академикс</H2>
-                    <Image src={Logo} alt="logo" width={136} height={26} objectFit="contain" />
+                    <H2>Финик</H2>
+                    {/* <Image src={Logo} alt="logo" width={136} height={26} objectFit="contain" /> */}
                 </div>
 
                 <div className="grid gap-4">
                     <div className="grid gap-2 md:text-center">
-                        <H1 className="max-md:text-[20px] text-[24px]">Регистрация на платформе</H1>
+                        <H1 className="max-md:text-[20px] text-[24px]">Регистрация в приложении</H1>
                         <P className="leading-6 max-md:text-[14px] max-md:leading-5">
-                            Сохранение вашего расписания, избранные расписания и больше
+                            Умный помощник для учета расходов, планирования бюджета и достижения финансовых целей
                         </P>
                     </div>
                     <div className="grid gap-3">
