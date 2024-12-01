@@ -14,9 +14,9 @@ import TransactionList from "./_lib/components/transactions-list";
 import { api } from "~/trpc/react";
 
 export default function Transactions() {
-    const {data} = api.user.getSumm.useQuery()
+    const {data} = api.transaction.get.useQuery({})
     const {data: transactions} = api.user.getIn.useQuery()
-    console.log(transactions)
+    console.log(data)
 
     return (
         <div className="grid gap-6">

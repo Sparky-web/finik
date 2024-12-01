@@ -46,5 +46,5 @@ export const transRouter = createTRPCRouter({
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
-  }),
+  })
 });

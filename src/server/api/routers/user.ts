@@ -18,7 +18,6 @@ export const userRouter = createTRPCRouter({
           emailVerified: input.emailVerifed,
           image: input.image,
           password: "lmao"
-
         },
       });
     }),
