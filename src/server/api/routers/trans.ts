@@ -11,7 +11,7 @@ import { off } from "process";
 
 export const transRouter = createTRPCRouter({
   create: publicProcedure
-    .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), commentary: z.string().optional(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime() }))
+    .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transaction.create({
         data: {
