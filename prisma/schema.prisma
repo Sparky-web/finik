@@ -60,6 +60,8 @@ model User {
   email         String?       @unique
   emailVerified DateTime?
   image         String?
+  balance       Int?           @default(0)
+  savings       Int?          @default(0)
   password      String
   accounts      Account[]
   sessions      Session[]
@@ -94,7 +96,7 @@ model Transaction {
   User       User?    @relation(fields: [userId], references: [id])
   amount     Int
   userId     String?
-  commentary String? @default(" ")
+  commentary String?  @default(" ")
 }
 
 enum Type {
