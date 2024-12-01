@@ -16,7 +16,7 @@ export default function DesktopMenu({ data }: MenuProps) {
     return (
         <div className="hidden lg:grid gap-6 bg-card shadow-xl px-5 content-start relative z-10 pt-8 ">
             <div className="flex gap-2 content-center items-center">
-                <Image src={Logo} alt="Академикс" width={36} height={36} style={{
+                <Image src={Logo} alt="Финик" width={36} height={36} style={{
                     // transform: "translateY(-2px)"
                 }} />
                 <div className="grid gap-0">

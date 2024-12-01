@@ -1,29 +1,82 @@
-# Create T3 App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+# Техническая документация для веб-приложения "Финик"
 
-## What's next? How do I make an app with this?
+## Цель приложения
+"Финик" предназначен для:
+- отслеживания личных финансов, включая доходы и расходы;
+- анализа финансовой активности с использованием графиков и категорий;
+- формирования и выполнения финансовых вызовов для улучшения финансовых привычек.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+---
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Используемые технологии
+- **T3 Stack** (TypeScript, Tailwind CSS, tRPC, Prisma);
+- **Tailwind CSS** — для стилизации интерфейса;
+- **Next.js** — для фронтенда и серверного рендеринга;
+- **NextAuth.js** — для авторизации;
+- **PostgreSQL** — для хранения данных;
+- **Prisma** — ORM для работы с базой данных;
+- **shadcn/ui** — библиотека пользовательских интерфейсов.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+---
 
-## Learn More
+## Инструкция по установке и запуску
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+1. **Клонирование репозитория**
+   ```bash
+   git clone <URL вашего репозитория>
+   cd finik
+   ```
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+2. **Установка зависимостей**
+   ```bash
+   npm install
+   ```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+3. **Создание файла переменных окружения**
+   - Скопируйте пример файла окружения:
+     ```bash
+     cp .env.example .env
+     ```
+   - Заполните файл `.env` необходимыми данными, включая:
+     - параметры подключения к базе данных PostgreSQL;
+     - секреты для NextAuth.js.
 
-## How do I deploy this?
+4. **Миграция базы данных**
+   ```bash
+   npx prisma migrate dev
+   ```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+5. **Запуск приложения**
+   ```bash
+   npm run dev
+   ```
+   Приложение будет доступно по адресу: `http://localhost:3000`.
+
+---
+
+## Описание страниц
+
+### 1. Главная страница
+- отображает текущий баланс, доходы и расходы за месяц;
+- предоставляет быстрый доступ к функциям изменения баланса, добавления доходов и трат;
+- показывает активные и выполненные вызовы.
+
+### 2. Транзакции
+- отображает список всех транзакций (трат и доходов) с детализацией по категориям;
+- включает возможность добавления новых транзакций;
+- предоставляет круговую диаграмму для анализа расходов.
+
+### 3. Вызовы
+- содержит список активных вызовов, например отказ от кофе, фастфуда или табачных изделий;
+- фиксирует выполненные вызовы, мотивируя на достижение целей.
+
+### 4. Авторизация
+- реализована через NextAuth.js с поддержкой OAuth и email-based входа.
+
+---
+
+## Особенности
+- динамическая настройка категорий доходов и расходов;
+- отслеживание выполнения финансовых целей и привычек;
+- визуализация данных в удобном и понятном формате.

@@ -60,7 +60,7 @@ export default function Transactions() {
                         </TabsList>
                     </Tabs>
 
-                    <div className="ml-auto">
+                    <div className="">
                         <PeriodSelector value={{
                             dbeg: DateTime.fromJSDate(period.dbeg),
                             dend: DateTime.fromJSDate(period.dend)

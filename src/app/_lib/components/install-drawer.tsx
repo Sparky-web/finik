@@ -17,7 +17,7 @@ export function useInstall() {
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle>Установите Академикс</DrawerTitle>
+            <DrawerTitle>Установите Финик</DrawerTitle>
             <DrawerDescription>Получите быстрый доступ и дополнительные возможности</DrawerDescription>
           </DrawerHeader>
           <div className="p-4 pb-0">
@@ -84,7 +84,7 @@ function InstallInstructions() {
       </div>}
 
       <p className="text-sm text-muted-foreground mb-2">
-        После установки вы сможете открывать "Академикс" одним касанием, прямо с главного экрана вашего устройства!
+        После установки вы сможете открывать "Финик" одним касанием, прямо с главного экрана вашего устройства!
       </p>
     </div>
   )
