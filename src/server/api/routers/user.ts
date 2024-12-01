@@ -186,7 +186,7 @@ export const userRouter = createTRPCRouter({
                amount: true
             },
             orderBy: undefined,
-            by: ["type", "categoryId"]
+            by: ["type"]
       
     })
 
