@@ -198,11 +198,12 @@ export const userRouter = createTRPCRouter({
 
     getMonth: protectedProcedure.query(async ({ ctx }) => {
 
-      const firstdate = moment().startOf('month').format('DD-MM-YYYY');
-      const lastdate=moment().endOf('month').format("DD-MM-YYYY");
-      const firstmonth =moment().subtract(1, 'months').startOf('month').format('DD-MM-YYYY');
-      const lastmonth=moment().subtract(1, 'months').endOf('month').format('DD-MM-YYYY')
+      const firstdate = moment().startOf('month').toISOString();
+      const lastdate=moment().endOf('month').toISOString();
 
+
+      const firstmonth =moment().subtract(1, 'months').startOf('month').toISOString()
+      const lastmonth=moment().subtract(1, 'months').endOf('month').toISOString()
 
 
       const user = await ctx.db.user.findUnique({

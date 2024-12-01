@@ -8,11 +8,19 @@ import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, Pencil, Wallet } from "luc
 import ActionsMenu from "~/app/_lib/components/menu/actions";
 import ClientActions from "./_lib/components/client-actions";
 import { useAppSelector } from "~/app/_lib/client-store";
+import { api } from "~/trpc/react";
+import { formatAmount } from "../transactions/_lib/components/categories";
 
 
 export default function Summary() {
     const user = useAppSelector(e => e.user?.user)
+    const [_,{data: challanges} ]= api.challengeUser.getAll.useSuspenseQuery()
+    const [_1, {data}] = api.user.getMonth.useSuspenseQuery()
 
+
+    if(!challanges || !data) return <div>Loading...</div>
+
+    const userData = data[0]
     // const {data} = api
 
     return (
@@ -33,10 +41,10 @@ export default function Summary() {
                                 <Wallet className="w-5 h-5" />
                                 Баланс
                             </CardTitle>
-                            <H2>60 000 ₽</H2>
+                            <H2>{formatAmount(userData?.balance)} ₽</H2>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                            на накопительном счете 90 000 ₽
+                            на накопительном счете {formatAmount(userData?.saving)} ₽
                         </span>
                     </Card>
                     <Card className="content-between">
@@ -45,10 +53,10 @@ export default function Summary() {
                                 <ArrowDownLeft className="w-5 h-5" />
                                 Доходы в этом месяце
                             </CardTitle>
-                            <H2>60 000 ₽</H2>
+                            <H2>{formatAmount(userData?.in)} ₽</H2>
                         </div>
                         <span className="text-sm text-muted-foreground text-green-500">
-                            на 2% больше, чем в предыдущем месяце
+                            на {userData?.inPercent}% больше, чем в предыдущем месяце
                         </span>
                     </Card>
                     <Card className="content-between">
@@ -57,10 +65,12 @@ export default function Summary() {
                                 <ArrowUpRight className="w-5 h-5" />
                                 Траты в этом месяце
                             </CardTitle>
-                            <H2>60 000 ₽</H2>
+                            <H2>
+                                {formatAmount(userData?.out)} ₽
+                            </H2>
                         </div>
                         <span className="text-sm text-muted-foreground text-red-600">
-                            на 2% больше, чем в предыдущем месяце
+                            на {userData?.outPercent}% больше, чем в предыдущем месяце
                         </span>
                     </Card>
                 </div>

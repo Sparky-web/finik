@@ -31,12 +31,12 @@ const menu: MenuItem[] = [
         path: '/app/accounts',
         icon: Wallet
     },
-   {
+    {
         title: 'Вызовы',
         path: '/app/challanges',
         icon: MedalIcon
     }
-    
+
     // {
     //     title: 'Загрузить расписание',
     //     path: '/lk/add-schedule',
@@ -56,7 +56,7 @@ export default function Menu() {
     const user = useAppSelector(e => e.user?.user)
 
     const desktopMenu = [...menu]
-    if(user && user.isAdmin) { 
+    if (user && user.isAdmin) {
         desktopMenu.push({
             title: 'Управление расписанием',
             path: '/lk/add-schedule',
