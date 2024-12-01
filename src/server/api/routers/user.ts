@@ -23,6 +23,16 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
+    delete: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.user.delete({
+        where: {
+          id: input.id
+        }
+      });
+    }),
+
     getAll: publicProcedure.query(async ({ ctx }) => {
         const user = await ctx.db.user.findMany();
     
@@ -67,19 +77,18 @@ export const userRouter = createTRPCRouter({
     }),
 
     getSumm: protectedProcedure.query(async ({ ctx }) => {
-        const trans = await ctx.db.transaction.findMany({
+        const trans = await ctx.db.transaction.groupBy({
             where: {
                 User: {
                     id: ctx.session.user.id
                 },
             },
-            select: {
-                _sum: {
-                    select: {amount: true},
+           _sum: {
+                   amount: true
                 },
                 orderBy: undefined,
                 by: ["type", "categoryId"]
-        }   
+          
         })
     
     return trans ?? null;
