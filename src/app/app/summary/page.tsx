@@ -24,8 +24,9 @@ export default function Summary() {
 
     const challangesData = [
         ...challanges.in_progress,
-        ...challanges.new.slice(0, 2),
-        ...challanges.completed.slice(0, 1)
+        ...challanges.new.slice(0, 3),
+        ...challanges.completed.slice(0, 1),
+        ...challanges.failed.slice(0, 1)
     ]
     // const {data} = api
 

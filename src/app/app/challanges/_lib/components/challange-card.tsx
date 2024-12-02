@@ -6,6 +6,7 @@ import { calculateProgress } from "../calculate-progress"
 import { cn } from "~/lib/utils"
 import { api } from "~/trpc/react"
 import { toast } from "sonner"
+import { formatAmount } from "~/app/app/transactions/_lib/components/categories"
 
 interface Challenge {
   id: number
@@ -135,9 +136,12 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
       <div className="flex size-12 items-center justify-center rounded-full bg-muted">
         {getChallengeIcon(data.challenge.categoryId)}
       </div>
-      <div className="grid flex-1 gap-2">
+      <div className="grid flex-1 gap-1">
         <div className="flex items-center justify-between gap-3">
-          <h3 className={cn("font-medium mb-0 text-sm", data.status === "NEW" && 'text-primary', data.status === 'COMPLETED' && 'text-green-500', data.status === 'FAILED' && 'text-red-500')}>{data.challenge.name}</h3>
+          <h3 className={cn("font-medium mb-0 text-sm", data.status === "NEW" && 'text-primary', data.status === 'COMPLETED' && 'text-green-500', data.status === 'FAILED' && 'text-red-500')}>
+            {data.challenge.name}&nbsp;
+            {!!data.transactionSum && data.status !== 'COMPLETED' && `— сэкономить ${formatAmount(data.transactionSum)} ₽`}
+            </h3>
           {getStatusBadge()}
         </div>
 
@@ -145,7 +149,7 @@ export function ChallengeCard({ data, onTakeChallenge, onRestartChallenge }: Cha
           не покупать товары из категеории "{data.challenge.category.name}" в течении дней: {data.challenge.durationDays}
         </p>
         {data.status !== "NEW" && data.status !== "COMPLETED" && data.status !== "FAILED" && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mt-2">
 
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
               <div

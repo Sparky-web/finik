@@ -111,6 +111,8 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
                 utils.transaction.get.refetch()
                 utils.user.getMonth.invalidate()
                 utils.user.getMonth.refetch()
+                utils.challengeUser.getAll.invalidate()
+                utils.challengeUser.getAll.refetch()
                 
                 toast.success('Транзакция успешно добавлена')
                 setOpen(false)

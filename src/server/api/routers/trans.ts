@@ -10,6 +10,34 @@ import { getGroupedTransactions } from "./_lib/get-transactions";
 import { off } from "process";
 import pmap from 'p-map';
 
+const checkChallange = async (ctx: any, categoryId: number) => {
+  const userChallanges = await ctx.db.userChallenge.findMany({
+    where: {
+      userId: ctx.session.user.id,
+      challenge: {
+        categoryId
+      },
+      status: "IN_PROGRESS"
+    },
+    include: {
+      challenge: true
+    }
+  })
+
+
+  console.log(userChallanges)
+  if (userChallanges.length > 0) {
+    await ctx.db.userChallenge.update({
+      where: {
+        id: userChallanges[0].id
+      },
+      data: {
+        status: "FAILED"
+      }
+    })
+  }
+}
+
 export const transRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime() }))
@@ -38,6 +66,10 @@ export const transRouter = createTRPCRouter({
             }
           }
         })
+      }
+
+      if (input.type === "OUT") {
+        checkChallange(ctx, input.categoryId)
       }
 
       return ctx.db.transaction.create({

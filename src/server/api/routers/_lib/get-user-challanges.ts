@@ -12,13 +12,38 @@ export default async function getUserChallanges(ctx: any) {
         }
     });
 
+    const challengesWithSum = await ctx.db.$queryRaw`
+    SELECT
+        c.id AS "challengeId",
+        c.name AS "challengeName",
+        c."durationDays",
+        SUM(CASE 
+            WHEN t."userId" = ${ctx.session.user.id}
+                AND t.date >= NOW() - (c."durationDays" * INTERVAL '1 DAY')
+                AND t.date <= NOW()
+            THEN t.amount 
+            ELSE 0 
+        END) AS "transactionSum"
+    FROM
+        "Challenge" c
+    JOIN "Category" cat ON c."categoryId" = cat.id
+    LEFT JOIN "Transaction" t 
+        ON cat.id = t."categoryId"
+    GROUP BY
+        c.id;
+`;
+
+
     const groupedChallenges = userChallenges.reduce(
         (acc, userChallenge) => {
             const status = userChallenge.status.toLowerCase();
             if (!acc[status]) {
                 acc[status] = [];
             }
-            acc[status].push(userChallenge);
+            acc[status].push({
+                ...userChallenge,
+                transactionSum: challengesWithSum.find(c => c.challengeId === userChallenge.challengeId)?.transactionSum || 0
+            });
             return acc;
         },
         {
@@ -41,7 +66,11 @@ export default async function getUserChallanges(ctx: any) {
         where: {
             id: { notIn: userChallenges.map(c => c.challengeId) },
             categoryId: {
-                notIn: groupedChallenges.in_progress.map(c => c.challenge.categoryId)
+                notIn:
+                    [
+                        ...groupedChallenges.in_progress.map(c => c.challenge.categoryId)
+                        , ...groupedChallenges.failed.map(c => c.challenge.categoryId)
+                    ]
             }
         }
     });
@@ -60,6 +89,7 @@ export default async function getUserChallanges(ctx: any) {
         new: newChallanges.map(e => ({
             id: Math.floor(Math.random() * 1000000),
             status: "NEW",
+            transactionSum: challengesWithSum.find(c => c.challengeId === e.id)?.transactionSum || 0,
             challenge: e
         }))
     }

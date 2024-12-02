@@ -44,8 +44,10 @@ const DialogContent = React.forwardRef<
       )}
       {...props}
     >
-      <ScrollArea className="max-h-[90dvh] p-0 overflow-auto">
-        {children}
+      <ScrollArea className="max-h-[90dvh] overflow-auto">
+        <div className="p-1">
+          {children}
+        </div>
       </ScrollArea>
       <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
         <X className="h-4 w-4" />
@@ -91,7 +93,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-lg font-semibold leading-none tracking-tight mb-2",
       className
     )}
     {...props}
