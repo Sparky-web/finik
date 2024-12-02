@@ -30,12 +30,12 @@ export default function Transactions() {
         dend: DateTime.now().endOf('month').toJSDate()
     })
 
-    const [type, setType] = useState<'IN' | 'OUT'>('IN')
+    const [type, setType] = useState<'IN' | 'OUT'>('OUT')
 
     const { data, isPending, isFetching } = api.transaction.get.useQuery({
         dbeg: period.dbeg,
         dend: period.dend,
-        limit: 1000,
+        limit: 99999,
         offset: 0
     })
 

@@ -4,9 +4,10 @@ import React from 'react'
 import { AccountModificationDialog } from './edit-account-dialog'
 import { TransferDialog } from './transfer-dialog'
 
-import { Pencil, ArrowDownRight, ArrowUpRight, ArrowRightLeft } from "lucide-react"
+import { Pencil, ArrowDownRight, ArrowUpRight, ArrowRightLeft, ImportIcon } from "lucide-react"
 import ActionsMenu from "~/app/_lib/components/menu/actions"
 import { AddTransactionDialog } from './add-tranasction'
+import ImportTransactionsDialog from './import-transactions'
 
 
 export default function ClientActions() {
@@ -14,6 +15,8 @@ export default function ClientActions() {
     const [transferOpen, setTransferOpen] = React.useState(false)
     const [addIncomeOpen, setAddIncomeOpen] = React.useState(false)
     const [addExpenseOpen, setAddExpenseOpen] = React.useState(false)
+
+    const [importOpen, setImportOpen] = React.useState(false)
 
     const actions = [
       
@@ -30,6 +33,13 @@ export default function ClientActions() {
             onClick: () => {
                 setAddExpenseOpen(true)
             }
+        },
+        {
+            title: 'Импорт транзакций',
+            icon: ImportIcon,
+            onClick: () => {
+                setImportOpen(true)
+            }
         }
     ]
 
@@ -40,6 +50,7 @@ export default function ClientActions() {
             <TransferDialog open={transferOpen} onOpenChange={setTransferOpen} onTransfer={() => { }} />
             <AddTransactionDialog type="IN" customOpen={addIncomeOpen} onOpenChange={setAddIncomeOpen} />
             <AddTransactionDialog type="OUT" customOpen={addExpenseOpen} onOpenChange={setAddExpenseOpen} />
+            <ImportTransactionsDialog open={importOpen} onOpenChange={setImportOpen} />
         </>
 
     )

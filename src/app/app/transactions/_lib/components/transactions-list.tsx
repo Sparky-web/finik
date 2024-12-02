@@ -88,29 +88,38 @@ export default function TransactionList({ days, selectedCategories }: { days: Da
                 return (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm"
+                    className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm gap-4 max-w-full"
                   >
                     <div className="flex items-center gap-4">
-                      {Icon && <Icon className="w-5 h-5" />}
                       <div>
-                        <div className="font-medium flex items-center gap-2 content-center">{transaction.category}
-                          <div className="w-4 h-4 rounded-md mt-0.25" style={{ backgroundColor: transaction.color }} />
+                        <div className="font-medium flex items-center gap-2 content-center">
+                          <div className="w-3 h-3 rounded-md mt-0.25" style={{ backgroundColor: transaction.color }} />
+
+                          <span className="line-clamp-1 break-all">
+                            {transaction.category}
+                          </span>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {formatTime(transaction.date)}
                         </div>
+                        {transaction.commentary && <div className="text-sm  mt-1 break-all hyphens-auto">
+                          {transaction.commentary || ''}
+                        </div>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       <span className={cn(
-                        "font-medium",
-                        transaction.type === 'IN' ? 'text-green-600' : 'text-red-600'
+                        "font-medium whitespace-nowrap",
+                        transaction.type === 'IN' ? 'text-green-600' : ''
                       )}>
                         {transaction.type === 'IN' ? '+' : ''}{formatAmount(transaction.amount)} ₽
                       </span>
                       <div className="flex gap-2">
                         <EditTransactionDialog
-                          transaction={transaction}
+                          transaction={{
+                            ...transaction,
+                            amount: transaction.amount?.toString(),
+                          }}
                           triggerButton={(props) => <Button
                             variant="ghost"
                             size="icon"

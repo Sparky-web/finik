@@ -8,13 +8,14 @@ import {
 import { getSummary } from "./_lib/get-summary";
 import { getGroupedTransactions } from "./_lib/get-transactions";
 import { off } from "process";
+import pmap from 'p-map';
 
 export const transRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ type: z.enum(["IN", "OUT"]), categoryId: z.number(), amount: z.number(), userId: z.string(), commentary: z.string().optional(), date: z.string().datetime() }))
     .mutation(async ({ ctx, input }) => {
-    
-      if(input.type == "IN"){
+
+      if (input.type == "IN") {
         const user = await ctx.db.user.update({
           where: {
             id: input.userId
@@ -26,7 +27,7 @@ export const transRouter = createTRPCRouter({
           }
         })
       }
-      else if (input.type == "OUT"){
+      else if (input.type == "OUT") {
         const user = await ctx.db.user.update({
           where: {
             id: input.userId
@@ -38,7 +39,7 @@ export const transRouter = createTRPCRouter({
           }
         })
       }
-      
+
       return ctx.db.transaction.create({
         data: {
           date: input.date,
@@ -51,7 +52,83 @@ export const transRouter = createTRPCRouter({
       });
     }),
 
+  import: protectedProcedure.input(z.array(z.object({
+    date: z.date(),
+    amount: z.number(),
+    type: z.enum(["IN", "OUT"]),
+    category: z.string(),
+    commentary: z.string().optional()
+  }))).mutation(async ({ ctx, input }) => {
+    let errors = 0;
+    let imported = 0;
 
+    const categories = await ctx.db.category.findMany()
+
+    for (const item of input) {
+      let category = categories.find(c => c.name === item.category && c.type === item.type)
+      if (!category) {
+        category = await ctx.db.category.create({
+          data: {
+            name: item.category,
+            type: item.type,
+            color: "#808080",
+          },
+        });
+        categories.push(category)
+      }
+
+      item.categoryId = category?.id
+    }
+
+    const foundTransactions = await ctx.db.transaction.findMany({
+      where: {
+        date: {
+          in: input.map(i => i.date)
+        }
+      }
+    })
+
+    const newTransactions = input.filter(i => !foundTransactions.find(t => t.date.toISOString() === i.date.toISOString()))
+
+    const res = await ctx.db.transaction.createMany({
+      data: newTransactions.map(i => ({
+        date: i.date,
+        type: i.type,
+        categoryId: i.categoryId,
+        amount: i.amount,
+        userId: ctx.session.user.id,
+        commentary: i.commentary || ''
+      }))
+    })
+
+    // await pmap(input, async (item) => {
+    //   try {
+    //     if(foundTransactions.find(t => t.date.toISOString() === item.date.toISOString())) return;
+
+    //     const transaction = await ctx.db.transaction.create({
+    //       data: {
+    //         date: item.date,
+    //         type: item.type,
+    //         categoryId: item.categoryId,
+    //         amount: item.amount,
+    //         userId: ctx.session.user.id,
+    //         commentary: item.commentary || ''
+    //       },
+    //     });
+
+    //     imported++;
+    //   } catch (e) {
+    //     console.error(e);
+    //     errors++;
+    //   }
+    // }, { concurrency: 5 });
+
+
+    return {
+      imported: res.count,
+      // errors
+    }
+  }),
   delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -61,8 +138,6 @@ export const transRouter = createTRPCRouter({
         }
       });
     }),
-
-
   getLatest: protectedProcedure.query(async ({ ctx }) => {
     console.log(ctx.session.user.id);
     const post = await ctx.db.transaction.findFirst({
@@ -102,7 +177,7 @@ export const transRouter = createTRPCRouter({
         }
       })
 
-      if(!transaction || transaction.userId !== ctx.session.user.id) throw new Error('Недостаточно прав для изменения транзакции')
+      if (!transaction || transaction.userId !== ctx.session.user.id) throw new Error('Недостаточно прав для изменения транзакции')
 
       return ctx.db.transaction.update({
         where: {
