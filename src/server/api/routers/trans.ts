@@ -84,7 +84,8 @@ export const transRouter = createTRPCRouter({
       where: {
         date: {
           in: input.map(i => i.date)
-        }
+        },
+        userId: ctx.session.user.id
       }
     })
 
