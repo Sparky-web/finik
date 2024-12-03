@@ -52,6 +52,8 @@ export const authConfig = {
         if (data) {
           // @ts-ignore
           delete data.password
+          delete data.aiTrends
+          delete data.aiAdvice
 
           token = { ...token, user: data }
         }
