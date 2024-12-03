@@ -9,7 +9,11 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+import Papa from 'papaparse';
+
 import moment from 'moment';
+import { promptGigachat } from "./_lib/propt-gigachat";
+import { DateTime } from "luxon";
 
 export const userRouter = createTRPCRouter({
   create: publicProcedure
@@ -25,7 +29,6 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
-
   delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -35,13 +38,11 @@ export const userRouter = createTRPCRouter({
         }
       });
     }),
-
   getAll: publicProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.user.findMany();
 
     return user ?? null;
   }),
-
   getbyId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const user = await ctx.db.user.findUnique({
       where: { id: input },
@@ -55,16 +56,13 @@ export const userRouter = createTRPCRouter({
       where: { createdBy: { id: ctx.session.user.id } },
     });
 
-
-
-
     return post ?? null;
   }),
 
   getIn: protectedProcedure.query(async ({ ctx }) => {
     const trans = await ctx.db.transaction.findMany({
       orderBy: { date: "desc" },
-      where: { User: { id: ctx.session.user.id}, type: "IN" },
+      where: { User: { id: ctx.session.user.id }, type: "IN" },
       include: {
         category: true
       }
@@ -73,60 +71,118 @@ export const userRouter = createTRPCRouter({
     return trans ?? null;
   }),
 
-  getDNK: protectedProcedure.query(async ({ ctx }) => {
-    const trans = await ctx.db.transaction.findMany({
-      orderBy: { date: "desc" },
-      where: { User: { id: ctx.session.user.id} },
-      include: {
-        category: true // не прикрутил название категорий
-      }
+  getAi: protectedProcedure.input(z.object({
+    type: z.enum(['advice', 'trends', 'dnk'])
+  })).query(async ({ ctx, input }) => {
+
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id }
     })
 
-    const url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
-
-    const {data} = await axios.post(url, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-        'RqUID': '<уникальный_идетификатор_запроса>', // надо генерить uuid4
-        'Authorization': 'NzlmNDI0YWYtYjVkOS00NmNlLThjZjMtNTUzOTc3NDczOTM5OmVmNTExODQ2LWNjMTYtNGExYy04M2NkLWU2ZGIxZmE5NjUzMg=='
-
-      }
-    })
-
-    const access_token = data.access_token;
-
-    const {data1} = await axios.post(url, {
-        "model": "GigaChat",
-        "messages": [
-        {
-          "role": "user",
-          "content": `${trans} \n проанализируй траты пользователя по параметрам: Импульсивность, Рациональность, Планирование, оцени в процентах от 1 до 100 и кратко опиши почему такой процент (максимум 100 символов для каждого параметра)`
+    if (user?.lastUpdatedAi && DateTime.fromJSDate(user?.lastUpdatedAi).plus({ days: 1 }).toJSDate() > new Date()) {
+      if (input.type === 'advice') {
+        if (user?.aiAdvice) {
+          return user?.aiAdvice
         }
-        ],
-        "stream": false,
-        "repetition_penalty": 1
-        }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${access_token}`
-
       }
-    })
+
+      if (input.type === 'trends') {
+        if (user?.aiTrends) {
+          return user?.aiTrends
+        }
+      }
+    }
 
 
+    let csv: string = ''
 
-    return trans ?? null;
+    if (input.type == 'advice' || input.type == 'trends') {
+      const res = await ctx.db.$queryRaw`SELECT 
+    DATE_TRUNC('month', t.date) AS month,
+    t."type",
+    c."name" AS category_name,
+    SUM(t.amount)::INTEGER AS total_amount
+FROM "Transaction" t
+JOIN "Category" c ON c.id = t."categoryId"
+WHERE t."userId" = ${ctx.session.user.id}
+AND t."date" BETWEEN (CURRENT_DATE - INTERVAL '3 months') AND CURRENT_DATE
+GROUP BY 
+    DATE_TRUNC('month', t.date),
+    t."type",
+    c."name"
+ORDER BY 
+    month,
+    t."type",
+    category_name;`
+      
+      csv = Papa.unparse(res)
+    } else {
+      const res = await ctx.db.$queryRaw` select t.date, t."type", t.amount, t.commentary, c."name"  from "Transaction"  t
+      join "Category" c on c.id = t."categoryId" 
+      where t."userId" = '${ctx.session.user.id}' AND t."date" BETWEEN (CURRENT_DATE - INTERVAL '1 months') AND CURRENT_DATE`
+    }
+    let prompt = csv + '\n\n'
+
+    if (input.type == 'advice') {
+      prompt += `in - доход out - расход
+проанализируй данные и дай короткий финансовый совет пользователю на 700 символов максимум
+если данные не предоставлены выше - скажи что недостаточно данных для анализа`
+    }
+    else if (input.type == 'trends') {
+      prompt += `in - доход out - расход
+какие тренды ты можешь отследить в тратах пользователя
+выдели 3 тренда и напиши только текст максимум на 700 символов для пользователя
+обращайся к пользователю на вы, используй конкретные цифры или проценты по которым ты посчитал такие тренды
+не используй форматирование текста звездочками!!!
+ничего не придумывай, четко анализируй данные и исходя из этого давай четкий ответ
+если ты даешь проценты ОБЯЗАТЕЛЬНО поясняй ПЕРИОД за который ты их посчитал
+если данные не предоставлены выше - скажи что недостаточно данных для анализа`
+    }
+    else if (input.type == 'dnk') {
+      prompt += `проанализируй траты пользователя по параметрам
+Импульсивность
+Рациональность
+Планирование
+
+оцени в процентах от 1 до 100
+и кратко опиши почему такой процент (максимум 100 символов для каждого параметра)`
+    }
+
+    const aiRes = await promptGigachat(prompt);
+    console.log(aiRes)
+
+    const res = aiRes.choices[0].message.content.replace('/\*/ig', '');
+
+    if (input.type == 'advice') {
+      await ctx.db.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          aiAdvice: res,
+          lastUpdatedAi: new Date()
+        }
+      })
+    } else if (input.type == 'trends') {
+      await ctx.db.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          aiTrends: res,
+          lastUpdatedAi: new Date()
+        }
+      })
+    }
+
+    return res;
+
+
   }),
 
-    getOut: protectedProcedure.query(async ({ ctx }) => {
-        const trans = await ctx.db.transaction.findMany({
-          orderBy: { date: "desc" },
-          where: { User: { id: ctx.session.user.id}, type: "OUT" },
-          include: {
-            category: true
-          }
+  getOut: protectedProcedure.query(async ({ ctx }) => {
+    const trans = await ctx.db.transaction.findMany({
+      orderBy: { date: "desc" },
+      where: { User: { id: ctx.session.user.id }, type: "OUT" },
+      include: {
+        category: true
+      }
     })
 
     return trans ?? null;
@@ -152,94 +208,94 @@ export const userRouter = createTRPCRouter({
 
 
 
-    addMoney: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  addMoney: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           balance: {
             increment: input.money
           }
-            
+
         },
       });
     }),
 
-    addMoneySaving: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  addMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           savings: {
             increment: input.money
           }
-            
+
         },
       });
     }),
 
-    removeMoney: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  removeMoney: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           balance: {
             decrement: input.money
           }
-            
+
         },
       });
     }),
 
-    removeMoneySaving: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  removeMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           savings: {
             decrement: input.money
           }
-            
+
         },
       });
     }),
 
-    setMoneySaving: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  setMoneySaving: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           savings: input.money
-            
+
         },
       });
     }),
 
-    setMoney: protectedProcedure
-    .input(z.object({ money: z.number()}))
+  setMoney: protectedProcedure
+    .input(z.object({ money: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
         where: {
-          id : ctx.session.user.id
+          id: ctx.session.user.id
         },
         data: {
           balance: input.money
-            
+
         },
       });
     }),
@@ -249,133 +305,133 @@ export const userRouter = createTRPCRouter({
 
 
 
-    getMonth: protectedProcedure.query(async ({ ctx }) => {
+  getMonth: protectedProcedure.query(async ({ ctx }) => {
 
-      const firstdate = moment().startOf('month').toISOString();
-      const lastdate=moment().endOf('month').toISOString();
-
-
-      const firstmonth =moment().subtract(1, 'months').startOf('month').toISOString()
-      const lastmonth=moment().subtract(1, 'months').endOf('month').toISOString()
+    const firstdate = moment().startOf('month').toISOString();
+    const lastdate = moment().endOf('month').toISOString();
 
 
-      const user = await ctx.db.user.findUnique({
-        where: {
-          id: ctx.session.user.id
-        }
-      })
+    const firstmonth = moment().subtract(1, 'months').startOf('month').toISOString()
+    const lastmonth = moment().subtract(1, 'months').endOf('month').toISOString()
 
-  
 
-      
-      const transin = await ctx.db.transaction.aggregate({
-        where: {
-          User: {
-            id: ctx.session.user.id,
-          },
-          type: "IN",
-          date: {
-            gte: firstdate,
-            lte: lastdate,
-          }
-        },
-        _sum: {
-          amount: true
-        },
-      }) ?? 0
-      console.log(`----------------- ${transin._sum.amount}----------------------`);
-      const transout = await ctx.db.transaction.aggregate({
-        where: {
-          User: {
-            id: ctx.session.user.id,
-          },
-          type: "OUT",
-          date: {
-            gte: firstdate,
-            lte: lastdate,
-          }
-        },
-        _sum: {
-          amount: true
-        },
-      }) ?? 0
-      const transin1 = await ctx.db.transaction.aggregate({
-        where: {
-          User: {
-            id: ctx.session.user.id,
-          },
-          type: "IN",
-          date: {
-            gte: firstmonth,
-            lte: lastmonth,
-          }
-        },
-        _sum: {
-          amount: true
-        },
-      }) ?? 0
-      const transout1 = await ctx.db.transaction.aggregate({
-        where: {
-          User: {
-            id: ctx.session.user.id,
-          },
-          type: "OUT",
-          date: {
-            gte: firstmonth,
-            lte: lastmonth,
-          }
-        },
-        _sum: {
-          amount: true
-        },
-      }) ?? 0
-
-      var sumin1: any = transin._sum.amount ?? null;
-      var sumin2: any = transin1._sum.amount ?? null;
-      var sumout1: any = transout._sum.amount ?? null;
-      var sumout2: any = transout1._sum.amount ?? null;
-      var aboba1: any = 0;
-      var aboba2: any = 0;
-
-      if (sumin1 > sumin2){
-        if(sumin2 == null){
-          aboba1 = null
-        }
-        else{
-          aboba1 = (sumin1/sumin2)*100
-        }
+    const user = await ctx.db.user.findUnique({
+      where: {
+        id: ctx.session.user.id
       }
-      else if(sumin1 < sumin2){
-        if(sumin1 == null){
-          aboba1 = null
-        }
-        else{
-          aboba1 = (sumin2/sumin1)*100
-        }
-      }
-      else if(sumin1 == sumin2){
-        aboba1 = 0;
-      }
+    })
 
-      if (sumout1 > sumout2){
-        if(sumout2 == null || sumout1 == null){
-          aboba2 = null
+
+
+
+    const transin = await ctx.db.transaction.aggregate({
+      where: {
+        User: {
+          id: ctx.session.user.id,
+        },
+        type: "IN",
+        date: {
+          gte: firstdate,
+          lte: lastdate,
         }
-        else{
-          aboba2 = (sumout1/sumout2)*100
+      },
+      _sum: {
+        amount: true
+      },
+    }) ?? 0
+    console.log(`----------------- ${transin._sum.amount}----------------------`);
+    const transout = await ctx.db.transaction.aggregate({
+      where: {
+        User: {
+          id: ctx.session.user.id,
+        },
+        type: "OUT",
+        date: {
+          gte: firstdate,
+          lte: lastdate,
         }
+      },
+      _sum: {
+        amount: true
+      },
+    }) ?? 0
+    const transin1 = await ctx.db.transaction.aggregate({
+      where: {
+        User: {
+          id: ctx.session.user.id,
+        },
+        type: "IN",
+        date: {
+          gte: firstmonth,
+          lte: lastmonth,
+        }
+      },
+      _sum: {
+        amount: true
+      },
+    }) ?? 0
+    const transout1 = await ctx.db.transaction.aggregate({
+      where: {
+        User: {
+          id: ctx.session.user.id,
+        },
+        type: "OUT",
+        date: {
+          gte: firstmonth,
+          lte: lastmonth,
+        }
+      },
+      _sum: {
+        amount: true
+      },
+    }) ?? 0
+
+    var sumin1: any = transin._sum.amount ?? null;
+    var sumin2: any = transin1._sum.amount ?? null;
+    var sumout1: any = transout._sum.amount ?? null;
+    var sumout2: any = transout1._sum.amount ?? null;
+    var aboba1: any = 0;
+    var aboba2: any = 0;
+
+    if (sumin1 > sumin2) {
+      if (sumin2 == null) {
+        aboba1 = null
       }
-      else if(sumout1 < sumout2){
-        if(sumout1 == null || sumout1 == null){
-          aboba2 = 0
-        }
-        else{
-          aboba2 = (sumout2/sumout1)*100
-        }
+      else {
+        aboba1 = (sumin1 / sumin2) * 100
       }
-      else if(sumout1 == sumout2){
-        aboba2 = 0;
+    }
+    else if (sumin1 < sumin2) {
+      if (sumin1 == null) {
+        aboba1 = null
       }
+      else {
+        aboba1 = -(sumin2 / sumin1) * 100
+      }
+    }
+    else if (sumin1 == sumin2) {
+      aboba1 = 0;
+    }
+
+    if (sumout1 > sumout2) {
+      if (sumout2 == null || sumout1 == null) {
+        aboba2 = null
+      }
+      else {
+        aboba2 = (sumout1 / sumout2) * 100
+      }
+    }
+    else if (sumout1 < sumout2) {
+      if (sumout1 == null || sumout1 == null) {
+        aboba2 = 0
+      }
+      else {
+        aboba2 = -(sumout2 / sumout1) * 100
+      }
+    }
+    else if (sumout1 == sumout2) {
+      aboba2 = 0;
+    }
 
 
     return [{
@@ -389,7 +445,7 @@ export const userRouter = createTRPCRouter({
 
 
     }];
-      }),
+  }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";

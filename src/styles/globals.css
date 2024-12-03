@@ -221,3 +221,7 @@ body {
 /* [transform-style:preserve-3d] {
   transform-style: preserve-3d;
 } */
+
+.markdown p, .markdown li {
+  padding-bottom: 24px;
+}

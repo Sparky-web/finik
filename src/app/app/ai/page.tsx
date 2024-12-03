@@ -1,18 +1,7 @@
-"use client"
-// import { H2, P } from "~/components/ui/typography";
-
-// export default function AI() {
-//     return (
-//         <div className="grid gap-6">
-//             <H2>AI помощник</H2>
-//             <P>
-
-//             </P>
-//         </div>
-//     )
-// }
-
 'use client'
+
+
+import * as marked from 'marked';
 
 import { useState, useEffect } from 'react'
 import { Button } from "~/components/ui/button"
@@ -20,9 +9,11 @@ import { Card, CardContent } from "~/components/ui/card"
 import { TrendingUp, Brain, Dna, ArrowRight, X, Wand2, Loader } from 'lucide-react'
 import { Progress } from "~/components/ui/progress"
 import { H2, H3, P } from '~/components/ui/typography'
+import { api } from '~/trpc/react'
 
 const aiTips = [
     {
+        type: "trends",
         title: "Узнать тренды расходов",
         name: "Ваши тренды расходов",
         description: "Анализ ваших финансовых потоков для выявления ключевых паттернов",
@@ -31,6 +22,7 @@ const aiTips = [
         analysis: "Ваши основные расходы: Еда (30%), Жилье (25%), Транспорт (15%). Рекомендуем оптимизировать расходы на еду, используя оптовые закупки и планирование меню."
     },
     {
+        type: "advice",
         title: "Получить финансовый совет",
         name: "Ваш финансовый совет",
         description: "Персонализированные рекомендации для улучшения финансового здоровья",
@@ -38,18 +30,19 @@ const aiTips = [
         color: "from-purple-700 to-pink-700",
         analysis: "Увеличьте ваши сбережения на 5% ежемесячно. Рассмотрите возможность инвестирования в индексные фонды для долгосрочного роста капитала."
     },
-    {
-        title: "Узнать финансовый ДНК",
-        name: "Ваш финансовый ДНК",
-        description: "Глубокий анализ вашего финансового поведения и стратегий",
-        icon: Dna,
-        color: "from-amber-700 to-orange-700", 
-        analysis: `Импульсивность: 70%Частые мелкие траты на развлечения и фастфуд указывают на склонность к импульсивным покупкам.
+    //     {
+    //         type: "dnk",
+    //         title: "Узнать финансовый ДНК",
+    //         name: "Ваш финансовый ДНК",
+    //         description: "Глубокий анализ вашего финансового поведения и стратегий",
+    //         icon: Dna,
+    //         color: "from-amber-700 to-orange-700", 
+    //         analysis: `Импульсивность: 70%Частые мелкие траты на развлечения и фастфуд указывают на склонность к импульсивным покупкам.
 
-Рациональность: 60%Регулярные крупные траты на подписки и косметику снижают уровень рациональности.
+    // Рациональность: 60%Регулярные крупные траты на подписки и косметику снижают уровень рациональности.
 
-Планирование: 40%Отсутствие четкого распределения бюджета и частые незапланированные траты говорят о слабом планировании.`
-    }
+    // Планирование: 40%Отсутствие четкого распределения бюджета и частые незапланированные траты говорят о слабом планировании.`
+    //     }
 ]
 
 export default function AITipsPage() {
@@ -86,7 +79,7 @@ export default function AITipsPage() {
             <P>
                 Страница с ИИ-подсказками предназначена для упрощения управления личными финансами. Она анализирует данные о ваших транзакциях, предлагает полезные инсайты и помогает лучше понять свои финансовые привычки, предоставляя рекомендации для оптимизации расходов и повышения эффективности планирования бюджета.
             </P>
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-2">
                 {aiTips.map((tip, index) => <AICard key={tip.title} tip={tip} index={index} startAnalysis={startAnalysis} />)}
             </div>
 
@@ -99,11 +92,16 @@ const AICard = ({ tip, index, startAnalysis }: any) => {
     const [data, setData] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
+    const utils = api.useUtils()
+
+
     const load = async () => {
         setIsLoading(true)
         try {
-            await new Promise(r => setTimeout(r, 2000))
-            setData(tip.analysis)
+            const data = await utils.user.getAi.fetch({
+                type: tip.type
+            })
+            setData(data)
         }
         catch (error) {
             console.log(error)
@@ -146,8 +144,9 @@ const AICard = ({ tip, index, startAnalysis }: any) => {
                         <Wand2 />
                         {tip.name}:
                     </H3>
-                    <P className='font-medium whitespace-pre-wrap'>
-                        {data}
+                    <P className='font-medium markdown' dangerouslySetInnerHTML={{
+                        __html: marked.marked(data)
+                    }}>
                     </P>
                 </>
             }

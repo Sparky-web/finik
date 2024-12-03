@@ -42,7 +42,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
         name: "type",
     })
 
-    const {data: categories} = api.category.get.useQuery()
+    const { data: categories } = api.category.get.useQuery()
 
     const [popoverOpen, setPopoverOpen] = React.useState(false)
 
@@ -76,16 +76,6 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 </FormSelectField>
                 }
             </form.Field> */}
-
-            <form.Field name="amount" validators={{
-                onChange: z.string().refine(e => +e > 0, 'Сумма должна быть больше 0')
-            }}>
-                {field => <FormTextField field={field} type="number" min={0}>
-                    <Label>Сумма (₽)</Label>
-                </FormTextField>
-                }
-            </form.Field>
-
             <form.Field name="categoryId" >
                 {field => (
                     <div className="grid gap-1.5">
@@ -113,7 +103,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                                 <Command>
                                     <CommandInput placeholder="Поиск категории..." />
                                     <CommandEmpty>Категория не найдена.</CommandEmpty>
-                                    <CommandGroup className="max-h-[300px] overflow-y-auto">
+                                    <CommandGroup className="max-h-[250px] overflow-y-auto">
                                         {categoriesFiltered.map((category) => (
                                             <CommandItem
                                                 key={category.id}
@@ -149,6 +139,17 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 )}
 
             </form.Field>
+
+            <form.Field name="amount" validators={{
+                onChange: z.string().refine(e => +e > 0, 'Сумма должна быть больше 0')
+            }}>
+                {field => <FormTextField field={field} type="number" min={0}>
+                    <Label>Сумма (₽)</Label>
+                </FormTextField>
+                }
+            </form.Field>
+
+
 
             <form.Field name="notes">
                 {field => <FormTextField field={field}>
