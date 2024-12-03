@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { INPUT_VALIDATION_RULES } from "node_modules/react-hook-form/dist/constants";
 import { z } from "zod";
+import axios from 'axios';
 
 import {
   createTRPCRouter,
@@ -72,6 +73,53 @@ export const userRouter = createTRPCRouter({
     return trans ?? null;
   }),
 
+  getDNK: protectedProcedure.query(async ({ ctx }) => {
+    const trans = await ctx.db.transaction.findMany({
+      orderBy: { date: "desc" },
+      where: { User: { id: ctx.session.user.id} },
+      include: {
+        category: true // не прикрутил название категорий
+      }
+    })
+
+    const url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
+
+    const {data} = await axios.post(url, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        'RqUID': '<уникальный_идетификатор_запроса>', // надо генерить uuid4
+        'Authorization': 'NzlmNDI0YWYtYjVkOS00NmNlLThjZjMtNTUzOTc3NDczOTM5OmVmNTExODQ2LWNjMTYtNGExYy04M2NkLWU2ZGIxZmE5NjUzMg=='
+
+      }
+    })
+
+    const access_token = data.access_token;
+
+    const {data1} = await axios.post(url, {
+        "model": "GigaChat",
+        "messages": [
+        {
+          "role": "user",
+          "content": `${trans} \n проанализируй траты пользователя по параметрам: Импульсивность, Рациональность, Планирование, оцени в процентах от 1 до 100 и кратко опиши почему такой процент (максимум 100 символов для каждого параметра)`
+        }
+        ],
+        "stream": false,
+        "repetition_penalty": 1
+        }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+
+      }
+    })
+
+
+
+    return trans ?? null;
+  }),
+
     getOut: protectedProcedure.query(async ({ ctx }) => {
         const trans = await ctx.db.transaction.findMany({
           orderBy: { date: "desc" },
@@ -101,6 +149,8 @@ export const userRouter = createTRPCRouter({
 
     return trans ?? null;
   }),
+
+
 
     addMoney: protectedProcedure
     .input(z.object({ money: z.number()}))
@@ -193,6 +243,9 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+
+
+
 
 
 
