@@ -66,7 +66,7 @@ export const convertDate = (isoString: string) => {
 
 export function AddTransactionDialog({ triggerButton: CustomTriggerButton, customOpen, onOpenChange, type }: AddTransactionDialogProps) {
     const [open, setOpen] = React.useState(false)
-    const isDesktop = true
+    const isDesktop = useMediaQuery('min-width: 740px') 
 
     const { mutateAsync: addTransaction, isPending } = api.transaction.create.useMutation()
 
@@ -113,7 +113,7 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
                 utils.user.getMonth.refetch()
                 utils.challengeUser.getAll.invalidate()
                 utils.challengeUser.getAll.refetch()
-                
+
                 toast.success('Транзакция успешно добавлена')
                 setOpen(false)
             } catch (e) {
@@ -138,37 +138,20 @@ export function AddTransactionDialog({ triggerButton: CustomTriggerButton, custo
     )
 
 
-    if (isDesktop) {
-        return (
-            <Dialog open={open} onOpenChange={setOpen}>
-                {!onOpenChange && <DialogTrigger asChild>{triggerButton}</DialogTrigger>}
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle className="font-semibold">Добавить {type === 'IN' ? 'доход' : 'трату'}</DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
-                            {/* {transaction} */}
-                        </DialogDescription>
-                    </DialogHeader>
-                    {content}
-                </DialogContent>
-            </Dialog>
-        )
-    }
-
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            {!onOpenChange && <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>}
-            <DrawerContent>
-                <DrawerHeader className="text-center">
-                    <DrawerTitle className="text-xl font-semibold">Добавить {type === 'IN' ? 'доход' : 'трату'}</DrawerTitle>
-                    {/* <DrawerDescription className="text-gray-600">
-            Переведите средства между вашими счетами.
-          </DrawerDescription> */}
-                </DrawerHeader>
-                <div className="p-4 pb-10">
-                    {content}
-                </div>
-            </DrawerContent>
-        </Drawer>
+        <Dialog open={open} onOpenChange={setOpen}>
+            {!onOpenChange && <DialogTrigger asChild>{triggerButton}</DialogTrigger>}
+            <DialogContent className={cn("sm:max-w-[425px]", !isDesktop && "top-[24px] translate-y-0")}>
+                <DialogHeader>
+                    <DialogTitle className="font-semibold">Добавить {type === 'IN' ? 'доход' : 'трату'}</DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
+                        {/* {transaction} */}
+                    </DialogDescription>
+                </DialogHeader>
+                {content}
+            </DialogContent>
+        </Dialog>
     )
+
+
 }

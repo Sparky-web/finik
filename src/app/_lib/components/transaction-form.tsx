@@ -80,7 +80,7 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                 {field => (
                     <div className="grid gap-1.5">
                         <Label>Категория</Label>
-                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} modal={true}>
+                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} modal={true} >
                             <PopoverTrigger asChild>
                                 <Button
                                     disabled={!typeField.state.value}
@@ -97,9 +97,11 @@ export default function TransactionForm({ form }: TransactionFormProps) {
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0 " style={{
-                                width: ref.current?.clientWidth || 'auto'
-                            }}>
+                            <PopoverContent className="w-full p-0 "
+
+                                style={{
+                                    width: ref.current?.clientWidth || 'auto'
+                                }}>
                                 <Command>
                                     <CommandInput placeholder="Поиск категории..." />
                                     <CommandEmpty>Категория не найдена.</CommandEmpty>

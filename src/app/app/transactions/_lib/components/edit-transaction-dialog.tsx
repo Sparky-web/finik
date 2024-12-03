@@ -54,7 +54,7 @@ const schema = z.object({
 
 export function EditTransactionDialog({ transaction, triggerButton: CustomTriggerButton }: EditTransactionDialogProps) {
   const [open, setOpen] = React.useState(false)
-  const isDesktop = true
+  const isDesktop = useMediaQuery('min-width: 740px')
 
   const { mutateAsync: updateTransaction } = api.transaction.update.useMutation()
 
@@ -111,11 +111,10 @@ export function EditTransactionDialog({ transaction, triggerButton: CustomTrigge
   )
 
 
-  if (isDesktop) {
-    return (
+      return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className={cn("sm:max-w-[425px]", !isDesktop && "top-[24px] translate-y-0")}>
           <DialogHeader>
             <DialogTitle className="font-semibold">Редактировать транзакцию</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -126,23 +125,8 @@ export function EditTransactionDialog({ transaction, triggerButton: CustomTrigge
         </DialogContent>
       </Dialog>
     )
-  }
+  
 
-  return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="text-center">
-          <DrawerTitle className="text-2xl font-semibold">Редактировать транзакцию</DrawerTitle>
-          {/* <DrawerDescription className="text-gray-600">
-            Переведите средства между вашими счетами.
-          </DrawerDescription> */}
-        </DrawerHeader>
-        <div className="p-4 pb-10">
-          {content}
-        </div>
-      </DrawerContent>
-    </Drawer>
-  )
+ 
 }
 
